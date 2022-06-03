@@ -22,101 +22,110 @@ authenticator(Sock) ->
     receive
         {tcp, _ , Data}->
             StrData = binary:bin_to_list(Data),
-            io:format("Recebi estes Dados~p~n",[StrData]),
-            [Acao | Aux] = string:tokens(StrData, " "),
-            [User | Passs] = Aux,
-            [Pass1 | T] = Passs,
-            Pass = string:substr(Pass1,1,(string:len(Pass1)-2)),
-            io:format("Acao = ~p~n",[Acao]),
-            io:format("User = ~p~n",[User]),
-            io:format("Pass = ~p~n",[Pass]),
+            %io:format("Recebi estes Dados~p~n",[StrData]),
+            ListaDados = string:tokens(string:substr(StrData,1,(string:len(StrData)-2)), " "),
+            LenghtListaDados = length(ListaDados),
+            if 
+                LenghtListaDados == 1 ->
+                    [Acao | Aux] = ListaDados,
+                    User = "",
+                    Pass = "";
+                LenghtListaDados == 2 ->
+                    [Acao | Aux] = ListaDados,
+                    [User | Passs] = Aux,
+                    Pass = "";
+                true ->
+                    [Acao | Aux] = ListaDados,
+                    [User | Passs] = Aux,
+                    [Pass1 | T] = Passs,
+                    Pass = Pass1
+            end,
+            %io:format("Acao = ~p~n",[Acao]),
+            %io:format("User = ~p~n",[User]),
+            %io:format("Pass = ~p~n",[Pass]),
 
             case Acao of
                 "login" when User =:= "" ->
-                    io:format("Login Falhou ~n"),
-                    U = 0,
-                    P = 0,
-                    gen_tcp:send(Sock,<<"login error\n">>),
+                    io:format("Login Falhou User inválido ~n"),
+                    gen_tcp:send(Sock,<<"Login Falhou User inválido\n">>),
                     authenticator(Sock);
 
                 "login" when Pass =:= "" ->
-                    io:format("Login Falhou ~n"),
-                    U = 0,
-                    P = 0,
-                    gen_tcp:send(Sock,<<"login error\n">>),
+                    io:format("Login Falhou Pass inválida ~n"),
+                    gen_tcp:send(Sock,<<"Login Falhou Pass inválida\n">>),
                     authenticator(Sock);
 
                 "login" ->
-                    io:format("Login Deu ~n"),
+                   
                     U = re:replace(User, "(^\\s+)|(\\s+$)", "", [global,{return,list}]),
                     P = re:replace(Pass, "(^\\s+)|(\\s+$)", "", [global,{return,list}]),                   
                     
                     case login(U,P) of
                         ok ->
-                            gen_tcp:send(Sock, <<"login successful\n">>),
+                            io:format("Login Deu ~n"),
+                            gen_tcp:send(Sock, <<"Login feito com sucesso!\n">>),
                             user(Sock, U);
                         _ ->
-                            gen_tcp:send(Sock,<<"login error\n">>),
+                            io:format("Login nao deu ~n"),
+                            gen_tcp:send(Sock,<<"Username e Password não correspondem!\n">>),
                             authenticator(Sock) % Volta a tentar autenticar-se
                     end;
                 "create_account" when User =:= "" ->
-                    io:format("Create Account Falhou ~n"),
-                    U = 0,
-                    P = 0,
-                    gen_tcp:send(Sock,<<"create_account error\n">>),
+                    io:format("Create Account Falhou User inválido ~n"),
+                    gen_tcp:send(Sock,<<"Create Account Falhou User inválido\n">>),
                     authenticator(Sock);
 
                 "create_account" when Pass =:= "" ->
-                    io:format("Create Account Falhou ~n"),
-                    U = 0,
-                    P = 0,
-                    gen_tcp:send(Sock,<<"create_account error\n">>),
+                    io:format("Create Account Falhou Pass inválida ~n"),
+                    gen_tcp:send(Sock,<<"Create Account Falhou Pass inválida\n">>),
                     authenticator(Sock);
 
                 "create_account" ->
-                    io:format("Create Account Deu ~n"),
+                    
                     U = re:replace(User, "(^\\s+)|(\\s+$)", "", [global,{return,list}]),
                     P = re:replace(Pass, "(^\\s+)|(\\s+$)", "", [global,{return,list}]),
                     case create_account(U,P) of
                         ok ->
-                            gen_tcp:send(Sock, <<"create_account successful\n">>),
+                            io:format("Create Account feito com sucesso! ~n"),
+                            gen_tcp:send(Sock, <<"Create Account feito com sucesso!\n">>),
                             %user(Sock, U);
                             authenticator(Sock);
                         _ ->
-                            gen_tcp:send(Sock,<<"create_account error\n">>),
+                            io:format("Username e Password não correspondem! ~n"),
+                            gen_tcp:send(Sock,<<"Conta já existente!\n">>),
                             authenticator(Sock)
                     end;
 
                 "close_account" when User =:= "" ->
-                    io:format("Close Account Falhou ~n"),
-                    U = 0,
-                    P = 0,
-                    gen_tcp:send(Sock,<<"close_account error\n">>),
+                    io:format("Close Account Falhou User inválido ~n"),
+                    gen_tcp:send(Sock,<<"Close Account Falhou User inválido \n">>),
                     authenticator(Sock);
 
                 "close_account" when Pass =:= "" ->
-                    io:format("Close Account Falhou ~n"),
-                    U = 0,
-                    P = 0,
-                    gen_tcp:send(Sock,<<"close_account error\n">>),
+                    io:format("Close Account Falhou Pass inválida ~n"),
+                    gen_tcp:send(Sock,<<"Close Account Falhou Pass inválida\n">>),
                     authenticator(Sock);
 
                 "close_account" ->
-                    io:format("Close Account Deu ~n"),
+                    
                     U = re:replace(User, "(^\s+)|(\s+$)", "", [global,{return,list}]),
                     P = re:replace(Pass, "(^\s+)|(\s+$)", "", [global,{return,list}]),
                     case close_account(U,P) of
                         ok ->
-                            gen_tcp:send(Sock, <<"close_account successful\n">>),
+                            io:format("Close Account feito com sucesso! ~n"),
+                            gen_tcp:send(Sock, <<"Close Account feito com sucesso!\n">>),
                             %user(Sock, U);
                             authenticator(Sock);
                         _ ->
-                            gen_tcp:send(Sock,<<"close_account error\n">>),
+                            io:format("Username e Password não correspondem! ~n"),
+                            gen_tcp:send(Sock,<<"Username e Password não correspondem!\n">>),
                             authenticator(Sock)
                     end;
+
+
                 _ ->
                     gen_tcp:send(Sock,<<"Opção Inválida \n">>),
-                    io:format("dados ~p~n",[Data]),
+                    %io:format("dados ~p~n",[Data]),
                     authenticator(Sock)
             end
     end.
@@ -162,12 +171,16 @@ logout (Username, Sock) ->
 cicloJogo(Sock, Username, GameManager) -> % Faz a mediação entre o Cliente e o processo GameManager
     receive
         {line, Data} -> % Recebemos alguma coisa do processo GameManager
-            io:format("ENVIEI ESTES DADOS~p~n",[Data]),
+            %io:format("ENVIEI ESTES DADOS~p~n",[Data]),
             gen_tcp:send(Sock, Data),
             cicloJogo(Sock, Username, GameManager);
         {tcp, _, Data} -> % Recebemos alguma coisa do socket (Cliente), enviamos para o GameManager
             NewData = re:replace(Data, "(^\\s+)|(\\s+$)", "", [global,{return,list}]),
             case NewData of
+                "pontos" -> 
+                    io:format("Recebi pontos"),
+                    GameManager ! {pontos, self()},
+                    cicloJogo(Sock, Username, GameManager);
                 "quit" ->
                     io:format("Recebi quit"),
                     GameManager ! {leave, self()},

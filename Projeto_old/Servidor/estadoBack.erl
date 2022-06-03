@@ -332,6 +332,36 @@ formatTops(ScoreTop, LevelTop) ->
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 formatResult({{U1, S1}, {U2, S2}}) ->
     Res = "result,"++ U1 ++ "," ++ float_to_list(S1, [{decimals, 3}] ) ++ "," ++ U2 ++ "," ++ float_to_list(S2, [{decimals, 3}] ) ++ ",",
     Res.
@@ -410,3 +440,22 @@ formatPlayer(P1, Username1) ->
             float_to_list(P1Drag, [{decimals, 3}]) ++ "," ++
             float_to_list(P1Size, [{decimals, 3}]),
     User1.
+
+
+
+
+
+
+update(Estado, Interpolacao) ->
+    {ListaJogadores, ListaVerdes, ListaReds, ListaObstaculos, TamanhoEcra} = Estado,
+    LLJ=length(ListaJogadores),
+    LLV=length(ListaJVerdes),
+    LLR=length(ListaReds),
+    LLO=length(ListaObstaculos),
+    case LLJ of
+        0 -> 
+        1 ->
+        2 ->
+        3 ->
+        true ->
+    end,

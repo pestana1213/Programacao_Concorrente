@@ -1,6 +1,10 @@
-// Need G4P library
+// Need G4P library //<>// //<>// //<>// //<>// //<>// //<>//
 import g4p_controls.*;
 import controlP5.*;
+import java.util.*;
+import java.lang.*;
+import java.util.StringTokenizer;
+import java.awt.Font;
 
 GTextArea server_connection_label; 
 GLabel titulo_label; 
@@ -9,19 +13,22 @@ GButton cancelar_button;
 GButton login_button;
 GButton opcoes_button;
 GWindow menu_window;
-
 GWindow registo_window;
 GWindow login_window;
 
 
 GWindow jogo_window;
+GButton jogo_pontos_button;
+GWindow pontos_Window;
+GLabel scoresA;
+GLabel perdeu_label;
 
 GLabel password_label; 
 GLabel nome_label; 
 GLabel password_label_1; 
 GLabel nome_label_1; 
 GTextField nome; 
-GButton concluir_registo_button; 
+GButton concluir_registo_button;
 GButton concluir_login_button; 
 GPassword password;
 String lastNome = "";
@@ -33,107 +40,158 @@ GTextField porta;
 String ipLido = "";
 String portaLida = "";
 
-
-Criatura r1 = new Criatura(200, 400, 0 , 1);
-
-
+boolean threadMorreu = false;
 boolean estadoJogo = false;
+boolean apresentarPontos = false;
 int state = 0;
 int i = 0;
 int f = 0;
+int conta = 0;
+Runnable runnablePontos;
 
-Jogo jogo = new Jogo(new ArrayList<Jogador>(),new ArrayList<Criatura>(),new ArrayList<Obstaculo>(),new HashMap<Jogador,Float>());
+Jogo jogo = new Jogo(new ArrayList<Jogador>(), new ArrayList<Criatura>(), new ArrayList<Obstaculo>(), new HashMap<String, Integer>());
 
-PImage red , bg;
+PImage red, bg;
 Conector con = new Conector();
 
-import java.util.StringTokenizer;
+HashMap<String, Integer> MelhoresPontuacoes = new HashMap<String, Integer>();
+float energiaAtual=0;
+float raioAtual=0;
 
-public void setup(){
+Thread thread;
+Thread ranking;
+int andaThread = 0;
+
+GLabel scores;
+GLabel energia;
+GLabel raio;
+GLabel agilidadeLabel;
+
+float agilidadeAtual;
+Font font = new Font("Arial", Font.PLAIN, 18);
+
+
+
+public void setup() {
   size(1200, 800, JAVA2D);
   frameRate(60);
   assets = new Assets();
-  menu();
- 
   jogo_window = GWindow.getWindow(this, "Jogo", 0, 0, 1200, 800, JAVA2D);
-  jogo_window.addDrawHandler(this, "drawJogo");
+  jogo_window.setActionOnClose(G4P.CLOSE_WINDOW);
   jogo_window.setVisible(false);
-  
+  jogo_pontos_button = new GButton(jogo_window, 1160, 0, 40, 35);
+  jogo_pontos_button.setIcon("Assets/ranking.png", 1, GAlign.SOUTH, GAlign.CENTER, GAlign.MIDDLE);
+  jogo_pontos_button.setLocalColorScheme(GCScheme.SCHEME_15);
+  jogo_pontos_button.addEventHandler(this, "jogo_pontos_button_click");
+  pontos_Window = GWindow.getWindow(this, "Melhores Pontuações", 1150, 400, 300, 300, JAVA2D);
+  pontos_Window.setActionOnClose(G4P.CLOSE_WINDOW);
+  pontos_Window.addOnCloseHandler(this, "fecha_ranking_window");
+  scoresA = new GLabel(pontos_Window, 35, 0, 200, 100, "");
+  scoresA.setTextAlign(GAlign.CENTER, GAlign.TOP);
+  scoresA.setLocalColorScheme(GCScheme.RED_SCHEME);
+  scoresA.setOpaque(false);
+  scoresA.setFont(font);
+  pontos_Window.setVisible(false);
+  menu();
+  scores = new GLabel(jogo_window, 35, 0, 200, 100, "");
+  scores.setTextAlign(GAlign.CENTER, GAlign.TOP);
+  scores.setLocalColorScheme(GCScheme.RED_SCHEME);
+  scores.setOpaque(false);
+  scores.setFont(font);
+  perdeu_label = new GLabel(jogo_window, 130, 191, 992, 394);
+  perdeu_label.setTextAlign(GAlign.CENTER, GAlign.MIDDLE);
+  perdeu_label.setFont(new Font("Arial", Font.PLAIN, 30));
+  perdeu_label.setText("");
+  perdeu_label.setOpaque(false);
+
+  agilidadeLabel = new GLabel(jogo_window, 850, 0, 200, 30, "");
+  agilidadeLabel.setLocalColorScheme(GCScheme.RED_SCHEME);
+  agilidadeLabel.setOpaque(false);
+  agilidadeLabel.setFont(font);
+
+  raio = new GLabel(jogo_window, 700, 0, 200, 30, "");
+  raio.setLocalColorScheme(GCScheme.RED_SCHEME);
+  raio.setOpaque(false);
+  raio.setFont(font);
+
+
 }
-/*
 
-  Runnable r = new Runnable(){
-      public void run(){
-        try {        
-            while (!con.read().equals("Comeca")){
-              Thread.sleep(100);
-            }
-            
-            println("Vou começar o jogo");
-            getSurface().setVisible(false);
-            jogo_window.setVisible(true);
-            estadoJogo = true;
-        }
-        catch(Exception e ){}
-    }
-  };
+public void close_jogo (GWindow window){
   
-  (new Thread(r)).start();
-
-
-*/
-
-
-
-public void draw(){
-  background(230);
-  fill(0);
-  //r1.draw();
+  estadoJogo = false;
+  con.write("quit");
+  //while(!con.read().equals(null)){println("limpa conector");}
+  getSurface().setVisible(true);
+  perdeu_label.setText("");
+  jogo_window.setVisible(false);
 }
 
-public void menu(){
-  
-  boolean ok = con.connect("172.26.112.1",12345);  
+public void fecha_ranking_window(GWindow window) {
+  pontos_Window.setVisible(false);
+  apresentarPontos = false;
+}
+
+void keyPressed_Handler(PApplet appc, GWinData data, KeyEvent event) {
+  if (appc.keyPressed) {
+    //println("Entrei no key pressed key = " + appc.key);
+    con.write("" + appc.key);
+  }
+}
+
+public void draw() {
+
+  if (estadoJogo == false) {
+    background(230);
+    fill(0);
+  }
+}
+
+public void menu() {
+
+  boolean ok = con.connect("172.27.112.1", 12345);  
+
+  this.noLoop();
   G4P.messagesEnabled(false);
   G4P.setGlobalColorScheme(GCScheme.BLUE_SCHEME);
   G4P.setMouseOverEnabled(false);
   G4P.setDisplayFont("Arial", G4P.PLAIN, 16);
   G4P.setInputFont("Arial", G4P.PLAIN, 20);
-  
+
   surface.setTitle("Jogo");
   server_connection_label = new GTextArea(this, 100, 150, 980, 110, G4P.SCROLLBARS_VERTICAL_ONLY | G4P.SCROLLBARS_AUTOHIDE);
   server_connection_label.setOpaque(true);
   server_connection_label.addEventHandler(this, "server_connection_label_change");
-  
+
   titulo_label = new GLabel(this, 300, 40, 630, 60);
   titulo_label.setTextAlign(GAlign.CENTER, GAlign.MIDDLE);
   titulo_label.setText("PROGRAMAÇÃO CONCORRENTE 2020/2021");
   titulo_label.setOpaque(false);
-  
 
-  
+  titulo_label = new GLabel(this, 300, 80, 630, 60);
+  titulo_label.setTextAlign(GAlign.CENTER, GAlign.TOP);
+  titulo_label.setText("CHOQUE DE GLUTÕES");
+  titulo_label.setOpaque(false);
+
   login_button = new GButton(this, 460, 300, 230, 70);
   login_button.setText("Login");
   login_button.setLocalColorScheme(GCScheme.GREEN_SCHEME);
   login_button.addEventHandler(this, "login_button_click");
-  
+
   registar_button = new GButton(this, 460, 400, 230, 70);
   registar_button.setText("Registar");
   registar_button.addEventHandler(this, "registar_button_click");
-  
+
   cancelar_button = new GButton(this, 460, 500, 230, 70);
   cancelar_button.setText("Cancelar");
   cancelar_button.setLocalColorScheme(GCScheme.RED_SCHEME);
   cancelar_button.addEventHandler(this, "cancelar_button_click");
-  
+
   opcoes_button = new GButton(this, 460, 600, 230, 70);
   opcoes_button.setText("Opções");
-  opcoes_button.setLocalColorScheme(GCScheme.BLUE_SCHEME);
+  opcoes_button.setLocalColorScheme(GCScheme.YELLOW_SCHEME);
   opcoes_button.addEventHandler(this, "opcoes_button_click");
-  
-
-  
-    
+  this.loop();
 }
 
 //#region menu
@@ -176,44 +234,43 @@ public void login_button_click(GButton source, GEvent event) { //_CODE_:login_bu
 //#endregion
 
 
-public void registar(){
-  
+public void registar() {
+
   registo_window = GWindow.getWindow(this, "Jogo_Registo", 600, 400, 500, 500, JAVA2D);
   registo_window.noLoop();
   registo_window.setActionOnClose(G4P.CLOSE_WINDOW);
   registo_window.addDrawHandler(this, "registo_window_draw");
-  
+
   password_label = new GLabel(registo_window, 20, 260, 160, 40);
   password_label.setTextAlign(GAlign.CENTER, GAlign.MIDDLE);
   password_label.setText("Palavra-Passe");
   password_label.setOpaque(false);
-  
+
   nome_label = new GLabel(registo_window, 20, 120, 160, 40);
   nome_label.setTextAlign(GAlign.CENTER, GAlign.MIDDLE);
   nome_label.setText("Nome :");
   nome_label.setOpaque(false);
-  
+
   nome = new GTextField(registo_window, 220, 120, 220, 40, G4P.SCROLLBARS_NONE);
   nome.setOpaque(true);
   nome.addEventHandler(this, "nome_change");
-  
+
   concluir_registo_button = new GButton(registo_window, 140, 380, 200, 60);
   concluir_registo_button.setText("REGISTAR");
   concluir_registo_button.addEventHandler(this, "concluir_registo_button_click");
-  
+
   password = new GPassword(registo_window, 220, 260, 220, 40);
   password.setMaxWordLength(20);
   password.setOpaque(true);
   password.addEventHandler(this, "password_change");
-  
-  
 
-  
-  
+
+
+
+
   registo_window.addOnCloseHandler(this, "close_registo_window");
-  
+
   registo_window.loop();
-  
 }
 
 
@@ -226,15 +283,16 @@ public void nome_change(GTextField source, GEvent event) {
 } 
 
 public void concluir_registo_button_click(GButton source, GEvent event) { 
-  
+
   println("concluir_registo_button - GButton >> GEvent." + event + " @ " + millis());
   getSurface().setVisible(true);
   registo_window.setVisible(false);
   con.write("create_account " + lastNome + " " + lastPassword);
+  lastNome = "";
+  lastPassword = "";
   String res = con.read();
   println("resposta do server" + res);
   server_connection_label.appendText(res);
-  
 } 
 
 
@@ -244,208 +302,309 @@ public void password_change(GPassword source, GEvent event) {
 } 
 
 public void close_registo_window (GWindow window) { 
-  registo_window.setVisible(false);
   getSurface().setVisible(true);
-  
+  registo_window.setVisible(false);
 } 
 
 
+public void login() {
 
-public void login(){
-  
-  
+
   registo_window = GWindow.getWindow(this, "Jogo Login", 600, 400, 500, 500, JAVA2D);
   registo_window.noLoop();
   registo_window.setActionOnClose(G4P.CLOSE_WINDOW);
   registo_window.addDrawHandler(this, "registo_window_draw");
-  
+
   password_label = new GLabel(registo_window, 20, 260, 160, 40);
   password_label.setTextAlign(GAlign.CENTER, GAlign.MIDDLE);
   password_label.setText("Palavra-Passe");
   password_label.setOpaque(false);
-  
+
   nome_label = new GLabel(registo_window, 20, 120, 160, 40);
   nome_label.setTextAlign(GAlign.CENTER, GAlign.MIDDLE);
   nome_label.setText("Nome :");
   nome_label.setOpaque(false);
-  
+
   nome = new GTextField(registo_window, 220, 120, 220, 40, G4P.SCROLLBARS_NONE);
   nome.setOpaque(true);
   nome.addEventHandler(this, "nome_change");
-  
+
   concluir_registo_button = new GButton(registo_window, 140, 380, 200, 60);
   concluir_registo_button.setText("LOGIN");
   concluir_registo_button.addEventHandler(this, "concluir_login_button_click");
-  
+
   password = new GPassword(registo_window, 220, 260, 220, 40);
   password.setMaxWordLength(20);
   password.setOpaque(true);
   password.addEventHandler(this, "password_change");
-  
+
   registo_window.addOnCloseHandler(this, "close_login_window");
-  
+
   registo_window.loop();
-  
-  
 }
 
 public void close_login_window (GWindow window) { 
-  registo_window.setVisible(false);
   getSurface().setVisible(true);
-  
+  registo_window.setVisible(false);
 } 
 
 
-public void concluir_login_button_click(GButton source, GEvent event) {  //<>//
-  
+public void concluir_login_button_click(GButton source, GEvent event) { 
+
   getSurface().setVisible(true);
   registo_window.setVisible(false);
   con.write("login " + lastNome + " " + lastPassword);
   String res = con.read();
   println("resposta do server" + res);
   server_connection_label.appendText(res);
+  jogo_window.addDrawHandler(this, "drawJogo");
+  jogo_window.addKeyHandler(this, "keyPressed_Handler");
+  jogo_window.addOnCloseHandler(this, "close_jogo");
+  jogo_window.setVisible(false);
+  
 
-  Runnable r = new Runnable(){
-      public void run(){
-        try {        
-            while (!con.read().equals("Comeca")){
-              Thread.sleep(100);
-            }
-            
-            println("Vou começar o jogo");
-            getSurface().setVisible(false);
-            jogo_window.setVisible(true);
-            estadoJogo = true;
-            while(true){
-              Thread.sleep(50);
-              println("a\n");
-              String estadoLido = con.read();
-              println(estadoLido);
-              //image(assets.green ,500 , 500 );
-              //jogo_window.image(assets.green ,500 , 500 );
-              updateJogo(estadoLido);
-              //jogo.draw();
-              
-        
-           } 
+    runnablePontos = new Runnable() {
+    public void run() {
+      try {  
+
+          while (apresentarPontos) {
+          
+             
+            println("THREAD PONTOS " + andaThread++);
+            con.write("pontos");
+            Thread.sleep(5000);
+          }
+          threadMorreu = true;
+          
         }
-        catch(Exception e ){}
+      catch(Exception e ) {
+      }
     }
   };
-  
-  (new Thread(r)).start();
+        
 
+  Runnable r = new Runnable() {
+    public void run() {
+      try {        
+        while (!con.read().equals("Comeca")) {
+          Thread.sleep(100);
+        }
+
+        println("Vou começar o jogo");
+        getSurface().setVisible(false);
+        estadoJogo = true;
+        jogo_window.frameRate(60);
+        jogo_window.setVisible(true);
+        while (estadoJogo) {
+          //println("a\n");
+          String estadoLido = con.read();
+
+          //println(estadoLido);
+
+          if (estadoLido.equals("Perdeu") ) {
+            scores.setText("");
+            raio.setText("");
+            agilidadeLabel.setText("");
+            perdeu_label.setText("PERDEU");
+            jogo_pontos_button.setVisible(false);
+            estadoJogo = false;
+          } else {
+            updateJogo(estadoLido);
+          }
+          
+
+          if (apresentarPontos && threadMorreu)
+            {
+              threadMorreu = false;
+              ranking = new Thread(runnablePontos);
+              ranking.start();
+            }
+        }
+      }
+      catch(Exception e ) {
+      }
+    }
+  };
+
+  thread = new Thread(r);
+  thread.start();
 } 
 
 
 synchronized public void drawJogo(PApplet appc, GWinData data) { 
-  //print("aa\n");
-  appc.background(250);
+  //conta++;
+  //print(conta + "\n");
+  appc.background(255);
+  appc.imageMode(CORNER);
+  //PImage aux = loadImage("./Assets/background.png");
+  //aux.resize(1200,800);
+  //appc.image(aux,0 , 0);
   appc.fill(0);
-  if(estadoJogo){
+  if (estadoJogo) {
+
     jogo.draw(appc);
+
+
+    appc.pushMatrix();
+    appc.fill(255, 255, 0);
+    appc.stroke(0);
+    appc.rect(300, 0, 200, 30);
+    appc.fill(255, 0, 0);
+    appc.noStroke();
+    appc.rect(300, 0, energiaAtual * 10, 30);
+    appc.popMatrix();
+    raio.setText("Raio: "+  Math.round(raioAtual));
+    agilidadeLabel.setText("Agilidade: " + Math.round(agilidadeAtual * 100.0) / 100.0 +"");
+
   }
 } 
 
 
+public void apresentar() {
 
-public void jogar(){
+  StringBuilder sb = new StringBuilder();
 
+
+  if (MelhoresPontuacoes != null && MelhoresPontuacoes.size() != 0)
+  {
+    Map<String, Integer> aux = sortByValue(MelhoresPontuacoes);
+    for (Map.Entry<String, Integer> entry : aux.entrySet()) {
+      sb.append(entry.getKey() + " = " + + entry.getValue() + "\n");
+    }
+
+    scoresA.setText(sb.toString());
+    println("Apresnetar " + sb.toString());
+    println("Apresnetar " + scoresA.getText());
+  }
 }
 
-public void cancelar(){
-  
-  
+
+public void jogo_pontos_button_click(GButton source, GEvent event) {
+  con.write("pontos"); 
+  apresentarPontos = true;
+  threadMorreu = true;
+}
+
+
+
+// function to sort hashmap by values
+public static HashMap<String, Integer> sortByValue(HashMap<String, Integer> hm)
+{
+  // Create a list from elements of HashMap
+  List<Map.Entry<String, Integer> > list =
+    new LinkedList<Map.Entry<String, Integer> >(hm.entrySet());
+
+  // Sort the list
+  Collections.sort(list, new Comparator<Map.Entry<String, Integer> >() {
+    public int compare(Map.Entry<String, Integer> o1, 
+      Map.Entry<String, Integer> o2)
+    {
+      return (o1.getValue()).compareTo(o2.getValue());
+    }
+  }
+  );
+
+  // put data from sorted list to hashmap
+  HashMap<String, Integer> temp = new LinkedHashMap<String, Integer>();
+  for (Map.Entry<String, Integer> aa : list) {
+    temp.put(aa.getKey(), aa.getValue());
+  }
+  return temp;
+}
+
+
+public void cancelar() {
+
+
   registo_window = GWindow.getWindow(this, "Jogo Cancelar", 600, 400, 500, 500, JAVA2D);
   registo_window.noLoop();
   registo_window.setActionOnClose(G4P.CLOSE_WINDOW);
   registo_window.addDrawHandler(this, "registo_window_draw");
-  
+
   password_label = new GLabel(registo_window, 20, 260, 160, 40);
   password_label.setTextAlign(GAlign.CENTER, GAlign.MIDDLE);
   password_label.setText("Palavra-Passe");
   password_label.setOpaque(false);
-  
+
   nome_label = new GLabel(registo_window, 20, 120, 160, 40);
   nome_label.setTextAlign(GAlign.CENTER, GAlign.MIDDLE);
   nome_label.setText("Nome :");
   nome_label.setOpaque(false);
-  
+
   nome = new GTextField(registo_window, 220, 120, 220, 40, G4P.SCROLLBARS_NONE);
   nome.setOpaque(true);
   nome.addEventHandler(this, "nome_change");
-  
+
   concluir_registo_button = new GButton(registo_window, 140, 380, 200, 60);
   concluir_registo_button.setText("ELIMINAR");
   concluir_registo_button.addEventHandler(this, "concluir_cancelar_button_click");
-  
+
   password = new GPassword(registo_window, 220, 260, 220, 40);
   password.setMaxWordLength(20);
   password.setOpaque(true);
   password.addEventHandler(this, "password_change");
-  
+
   registo_window.addOnCloseHandler(this, "close_cancelar_window");
-  
+
   registo_window.loop();
-  
 }
 
 public void close_cancelar_window (GWindow window) { 
-  registo_window.setVisible(false);
   getSurface().setVisible(true);
-  
+  registo_window.setVisible(false);
 } 
 
 
 public void concluir_cancelar_button_click(GButton source, GEvent event) { 
-  
+
   getSurface().setVisible(true);
   registo_window.setVisible(false);
   con.write("close_account " + lastNome + " " + lastPassword);
   String res = con.read();
   println("resposta do server" + res);
   server_connection_label.appendText(res);
-  
+  res = "";
+  while (res.equals("")) {
+   res = con.read();
+  }
 } 
 
 
 
 
+public void opcoes() {
 
-public void opcoes(){
-  
-  
+
   registo_window = GWindow.getWindow(this, "Jogo Conectar", 600, 400, 500, 500, JAVA2D);
   registo_window.noLoop();
   registo_window.setActionOnClose(G4P.CLOSE_WINDOW);
   registo_window.addDrawHandler(this, "registo_window_draw");
-  
+
   password_label = new GLabel(registo_window, 20, 260, 160, 40);
   password_label.setTextAlign(GAlign.CENTER, GAlign.MIDDLE);
   password_label.setText("PORTA");
   password_label.setOpaque(false);
-  
+
   nome_label = new GLabel(registo_window, 20, 120, 160, 40);
   nome_label.setTextAlign(GAlign.CENTER, GAlign.MIDDLE);
   nome_label.setText("IP");
   nome_label.setOpaque(false);
-  
+
   ip = new GTextField(registo_window, 220, 120, 220, 40, G4P.SCROLLBARS_NONE);
   ip.setOpaque(true);
   ip.addEventHandler(this, "ip_change");
-  
+
   concluir_registo_button = new GButton(registo_window, 140, 380, 200, 60);
   concluir_registo_button.setText("FAZER LIGAÇÃO");
   concluir_registo_button.addEventHandler(this, "concluir_opcoes_button_click");
-  
+
   porta = new GTextField(registo_window, 220, 260, 220, 40, G4P.SCROLLBARS_NONE);
   porta.setOpaque(true);
   porta.addEventHandler(this, "porta_change");
-  
+
   registo_window.addOnCloseHandler(this, "close_cancelar_window");
-  
+
   registo_window.loop();
-  
 }
 
 public void ip_change(GTextField source, GEvent event) { 
@@ -461,104 +620,126 @@ public void porta_change(GTextField source, GEvent event) {
 
 
 public void close_opcoes_window (GWindow window) { 
-  registo_window.setVisible(false);
   getSurface().setVisible(true);
-  
+  registo_window.setVisible(false);
 } 
 
 
 public void concluir_opcoes_button_click(GButton source, GEvent event) { 
-  
+
   getSurface().setVisible(true);
   registo_window.setVisible(false);
-  
-  
-  boolean ok = con.connect(ipLido,Integer.parseInt(portaLida));  
-  if(!ok){
+
+
+  boolean ok = con.connect(ipLido, Integer.parseInt(portaLida));  
+  if (!ok) {
     server_connection_label.appendText("Não me consegui conectar :(");
-  }
-  else {
+  } else {
     server_connection_label.appendText("Conexão concluída com sucesso");
   }
   
-
+  String res = "";
+  while (res.equals("")) {
+   res = con.read();
+  }
   
 } 
 
 
 
+public void updateJogo(String res) {
 
-public void updateJogo(String res){
 
-  
-  StringTokenizer stk = new StringTokenizer(res," ");
+  StringTokenizer stk = new StringTokenizer(res, " ");
+
+  if (stk.nextToken().equals("Pontos")) {
+    println("Estou a ler pontos");
+    int numJogadores = new Integer(stk.nextToken()).intValue();
+    println("Estou a ler pontos numjogadores" + numJogadores);
+    for (int i = 0; i < numJogadores; i++) {
+      String nome = new String(stk.nextToken());
+      println("Estou a ler pontos nome" + nome);
+      int pontuacao = new Integer(stk.nextToken()).intValue();
+      println("Estou a ler pontos pontuacao" + pontuacao);
+      MelhoresPontuacoes.put(nome, pontuacao);
+      println(MelhoresPontuacoes.toString());
+    }
+
+    apresentar();
+    pontos_Window.setVisible(true);
     
-  int numJogadores = new Integer(stk.nextToken()).intValue(); //<>//
-  System.out.println(numJogadores); //<>//
-  
-  ArrayList<Jogador> jogadores = new ArrayList<Jogador>();
-  
-  for (int i = 0 ; i < numJogadores ; i++){
-      
-      int posX = new Integer(stk.nextToken()).intValue();
-      int posY = new Integer(stk.nextToken()).intValue();
-      int raio = new Integer(stk.nextToken()).intValue();
+
+  } else {
+    int numJogadores = new Integer(stk.nextToken()).intValue();
+
+    ArrayList<Jogador> jogadores = new ArrayList<Jogador>();
+    HashMap<String, Integer> pontos = new HashMap<String, Integer>();    
+
+    for (int i = 0; i < numJogadores; i++) {
+
+      String nome = new String(stk.nextToken());
+      int pontuacao = new Integer(stk.nextToken()).intValue();
+      float posX = new Float(stk.nextToken()).floatValue();
+      float posY = new Float(stk.nextToken()).floatValue();
+      float raio = new Float(stk.nextToken()).floatValue();
       float dir = new Float(stk.nextToken()).floatValue();
       float energia = new Float(stk.nextToken()).floatValue();
       float agilidade = new Float(stk.nextToken()).floatValue();
-      
-      Jogador p = new Jogador (posX , posY , raio , dir , energia , agilidade);
+
+      if (lastNome.equals(nome)) {      
+        energiaAtual = energia;
+        raioAtual = raio;
+        agilidadeAtual = agilidade;
+      }
+
+      Jogador p = new Jogador (nome, pontuacao, posX, posY, raio, dir, energia, agilidade);
       jogadores.add(p);
-      
-  }
-  
-  ArrayList<Criatura> criaturas = new ArrayList<Criatura>();
-  
-  int numVerdes = new Integer(stk.nextToken()).intValue();
-  System.out.println(numVerdes);
-    
-    for (int i = 0 ; i < numVerdes ; i++){
-      
-      int posX = new Integer(stk.nextToken()).intValue();
-      int posY = new Integer(stk.nextToken()).intValue();
+      pontos.put(nome, pontuacao);
+    }
+
+    ArrayList<Criatura> criaturas = new ArrayList<Criatura>();
+
+    int numVerdes = new Integer(stk.nextToken()).intValue();
+
+    for (int i = 0; i < numVerdes; i++) {
+
+      float posX = new Float(stk.nextToken()).floatValue();
+
+      float posY = new Float(stk.nextToken()).floatValue();
       float dir = new Float(stk.nextToken()).floatValue();
       int tipo = 0;
-      
-      Criatura c = new Criatura (posX , posY , dir , tipo);
+
+      Criatura c = new Criatura (posX, posY, dir, tipo);
       criaturas.add(c);
-      
-  }
-  
-  int numVermelhos = new Integer(stk.nextToken()).intValue();
-  System.out.println(numVermelhos);
-    
-    for (int i = 0 ; i < numVermelhos ; i++){
-      
-      int posX = new Integer(stk.nextToken()).intValue();
-      int posY = new Integer(stk.nextToken()).intValue();
+    }
+
+    int numVermelhos = new Integer(stk.nextToken()).intValue();
+
+    for (int i = 0; i < numVermelhos; i++) {
+
+      float posX = new Float(stk.nextToken()).floatValue();
+      float posY = new Float(stk.nextToken()).floatValue();
       float dir = new Float(stk.nextToken()).floatValue();
       int tipo = 1;
-      
-      Criatura c = new Criatura (posX , posY , dir , tipo);
+
+      Criatura c = new Criatura (posX, posY, dir, tipo);
       criaturas.add(c);
-      
-  }
-  
-  ArrayList<Obstaculo> obstaculos = new ArrayList<Obstaculo>();
-  
-  int numObstaculos = new Integer(stk.nextToken()).intValue();
-    System.out.println(numObstaculos);
-    
-    for (int i = 0 ; i < numObstaculos ; i++){
-      
+    }
+
+    ArrayList<Obstaculo> obstaculos = new ArrayList<Obstaculo>();
+
+    int numObstaculos = new Integer(stk.nextToken()).intValue();
+
+    for (int i = 0; i < numObstaculos; i++) {
+
       int posX = new Integer(stk.nextToken()).intValue();
       int posY = new Integer(stk.nextToken()).intValue();
       int tamanho = new Integer(stk.nextToken()).intValue();
-      
-      Obstaculo o = new Obstaculo (posX , posY , tamanho);
-      obstaculos.add(o);
-      
-  }
 
-  jogo.update (jogadores, criaturas, obstaculos, new HashMap<Jogador,Float>());
+      Obstaculo o = new Obstaculo (posX, posY, tamanho);
+      obstaculos.add(o);
+    }
+
+    jogo.update (jogadores, criaturas, obstaculos, pontos);
+  }
 }

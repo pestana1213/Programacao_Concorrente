@@ -32,10 +32,10 @@ public class Conector {
     
         
     public String read(){
-      String str; //<>//
-        try{ //<>//
+      String str; //<>// //<>//
+        try{ //<>// //<>//
         	str = in.readLine();  
-        	System.out.println("Read : " + str);
+        	//System.out.println("Read : " + str);
         } catch(Exception e)
         {
           return null;

@@ -1,0 +1,8 @@
+cd("C:/Users/Dimitri/Desktop/Trabalho PC/Programacao_concorrente/Servidor").
+c(server).
+c(jogadores).
+c(criaturas).
+c(auxiliar).
+c(estado).
+c(conversores).
+server:start().

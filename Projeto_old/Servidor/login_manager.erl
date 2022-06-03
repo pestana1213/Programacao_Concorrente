@@ -10,7 +10,7 @@ start_Login_Manager () ->
 
 call(Request)->
     module ! {Request,self()},          %mandar request ao module com o meu pid
-    receive {Res, module} -> Res end.   % esperar receber resposta
+    receive Res -> Res end.   % esperar receber resposta
 
 
 stop() -> call(stop).
@@ -31,13 +31,13 @@ loop(Map) ->
         {{create_account, Username, Pass}, From} ->
             case maps:find (Username,Map) of
                 error when Username =:= "", Pass =:= "" ->
-                    From ! {bad_arguments ,module},              % mandar mensagem ao from a dizer que nao gostou dos argumentos (ambos vazios)
+                    From ! bad_arguments,              % mandar mensagem ao from a dizer que nao gostou dos argumentos (ambos vazios)
                     loop (Map);
                 error ->                                    % mandar mensagem ao from a dizer ok caso que criou a conta
-                    From ! {ok,module},
+                    From ! ok,
                     loop ( maps:put(Username, {Pass, false}, Map) );
                 _ ->
-                    From ! {user_exists, module},           % mandar mensagem ao from a dizer que o user ja existe pois o find nao deu erro
+                    From ! invalid,           % mandar mensagem ao from a dizer que o user ja existe pois o find nao deu erro
                     loop (Map)
             end;
         
@@ -45,11 +45,11 @@ loop(Map) ->
         {{close_account, Username, Pass}, From} ->
             case maps:find (Username, Map) of
                 {ok , {Pass, _ } } ->                       % _ -> uma coisa qualquer Ã© onde diz se esta online (T/F)
-                        From ! { ok, module},
+                        From ! ok,
                         loop ( maps:remove (Username,Map) );
 
                 _ ->
-                    From ! { invalid, module},
+                    From ! invalid,
                     loop ( Map )
             end;
         
@@ -57,10 +57,10 @@ loop(Map) ->
         {{login , Username , Pass}, From} ->
             case maps:find (Username,Map) of
                 {ok, {Pass,false}} ->
-                    From ! { ok, module},
+                    From ! ok,
                     loop ( maps:put ( Username, {Pass,true}, Map) ) ;
                 _ ->
-                    From ! { invalid, module},
+                    From ! invalid,
                     loop ( Map )
             end;
         
@@ -68,10 +68,10 @@ loop(Map) ->
         {{logout, Username }, From} ->
             case maps:find (Username,Map) of
                 {ok, {Pass,true}} ->
-                    From ! { ok, module},
+                    From ! ok,
                     loop ( maps:put ( Username, {Pass, false}, Map) );
                 _ ->
-                    From ! {invalid, module},
+                    From ! invalid,
                     loop ( Map )
             end;
         
@@ -82,5 +82,5 @@ loop(Map) ->
         
         
         {stop, From} ->
-            From ! {ok,module}
+            From ! ok
     end.

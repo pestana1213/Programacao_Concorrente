@@ -6,6 +6,7 @@ class Assets {
   PImage pedra;
   PImage player0;
   PImage player1;
+  PImage pacman;
 
   Assets() {
     //   background = loadImage("./Assets/background.png");
@@ -19,6 +20,6 @@ class Assets {
     this.red.resize(50,50);
     
     this.pedra = loadImage("./Assets/pedra.png");   
-    
+    this.pacman = loadImage("./Assets/Pacman.png");
   }
 }

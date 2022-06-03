@@ -34,6 +34,7 @@ calculaVelocidadeMax(Raio) ->
 
 acelerarFrente(Jogador) ->
     {E,Posicao, Direcao, Velocidade, Energia,Raio, AceleracaoLinear, AceleracaoAngular, EnergiaMax, GastoEnergia, GanhoEnergia, Arrasto, RaioMax,RaioMin, Agilidade} = Jogador,
+    VelocidadeMaxRaio = calculaVelocidadeMax(Raio),
     case E of
         true ->
             if
@@ -42,7 +43,7 @@ acelerarFrente(Jogador) ->
                     NEnergia   = Energia - GastoEnergia,
 
                     if 
-                    NvelocidadeA > calculaVelocidadeMax(Raio) ->
+                    NvelocidadeA > VelocidadeMaxRaio ->
                         Nvelocidade = VelocidadeMax;
                     true ->     
                         Nvelocidade =  NvelocidadeA
