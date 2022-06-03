@@ -22,9 +22,9 @@ class Obstaculo {
 
     public void draw(PApplet appc) {
 
-
-    appc.fill(color(0,0,0));
-    appc.ellipse(this.pos.x,this.pos.y,this.tam,this.tam);
+      PImage aux = loadImage("./Assets/pedra.png");
+      aux.resize(this.tam,this.tam);
+      appc.image(aux,this.pos.x , this.pos.y );
       
 
   }

@@ -10,14 +10,14 @@ class Jogo {
   ArrayList<Jogador> players;
   ArrayList<Criatura> criaturas;
   ArrayList<Obstaculo> obstaculos;
-  HashMap<String, Integer> pontos;
+  HashMap<Jogador,Float> pontos;
   //float thisPlayerPoints;
   //float adversaryPoints;
   Lock l;
 
 
 
-  public Jogo (ArrayList<Jogador> players, ArrayList<Criatura> criaturas, ArrayList<Obstaculo> obstaculos, HashMap<String, Integer> pontos) {
+  public Jogo (ArrayList<Jogador> players, ArrayList<Criatura> criaturas, ArrayList<Obstaculo> obstaculos, HashMap<Jogador,Float> pontos) {
 
       this.players  = players;
       this.criaturas = criaturas;
@@ -26,7 +26,7 @@ class Jogo {
       this.l = new ReentrantLock();
   }
 
-  void update (ArrayList<Jogador> players, ArrayList<Criatura> criaturas, ArrayList<Obstaculo> obstaculos, HashMap<String, Integer> pontos) {
+  void update (ArrayList<Jogador> players, ArrayList<Criatura> criaturas, ArrayList<Obstaculo> obstaculos, HashMap<Jogador,Float> pontos) {
 
     this.l.lock();
     try {
@@ -53,16 +53,6 @@ class Jogo {
     for(Jogador p: this.players) {
         p.draw(appc);
     }
-    
-    StringBuilder sb = new StringBuilder();
-    Map<String, Integer> aux = sortByValue(this.pontos);
-    for (Map.Entry<String, Integer> entry : aux.entrySet()) {
-      sb.append(entry.getKey() + " = " + + entry.getValue() + "\n");
-
-    }
-    
-    scores.setText(sb.toString());
-    
   }
   
 }

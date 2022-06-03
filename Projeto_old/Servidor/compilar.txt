@@ -1,7 +1,7 @@
+cd("C:/Users/Dimitri/Desktop/Trabalho PC/Final/Servidor").
 c(server).
 c(jogadores).
 c(criaturas).
 c(auxiliar).
 c(estado).
-c(conversores).
 server:start().
