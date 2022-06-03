@@ -1,20 +1,20 @@
 -module (server).
 -export ([start/0]).
--import (login_manager, [start_Login_Manager/0, create_account/2, close_account/2, login/2, logout/1, online/0]). 
+-import (login_manager, [start_Login_Manager/0, create_account/2, close_account/2, login/2, logout/1]). 
 -import (estado, [start_state/0]). 
 
 start () ->
     io:format("Iniciei o Server~n"),
     PidState = spawn ( fun() -> estado:start_state() end),  %Iniciar o processo com o estado do servidor
     register(state,PidState),
-    register(login_manager, spawn( fun() -> login_manager:start_Login_Manager() end)), % Criar processo que se encarrega de guardar os logins e validar passwords
+    register(login_manager, spawn( fun() -> login_manager:start_Login_Manager() end)), % Login manager
     Port = 12345,
-    {ok, Socket} = gen_tcp:listen(Port, [binary, {packet, line}, {reuseaddr, true}]),    %criar o Socket
+    {ok, Socket} = gen_tcp:listen(Port, [binary, {packet, line}, {reuseaddr, true}]),    %Socket
     acceptor(Socket).
 
 acceptor ( Socket )->
     {ok, Sock} = gen_tcp:accept(Socket),
-    spawn( fun() -> acceptor( Socket ) end), % Geramos outro aceptor para permitir que outros clientes se possam conectar ao servidor
+    spawn( fun() -> acceptor( Socket ) end), 
     authenticator(Sock).
 
 authenticator(Sock) ->
@@ -67,7 +67,7 @@ authenticator(Sock) ->
                             user(Sock, U);
                         _ ->
                             io:format("Login nao deu ~n"),
-                            gen_tcp:send(Sock,<<"Username e Password não correspondem!\n">>),
+                            gen_tcp:send(Sock,<<"Erro ao fazer login!\n">>),
                             authenticator(Sock) % Volta a tentar autenticar-se
                     end;
                 "create_account" when User =:= "" ->
@@ -144,33 +144,11 @@ user(Sock, Username) ->
             cicloJogo(Sock, Username, GameManager) % Desbloqueou vai para a função principal do jogo
     end.
 
-logout (Username, Sock) ->
+
+
+cicloJogo(Sock, Username, GameManager) -> 
     receive
-        {tcp, _ , Data}->
-            StrData = binary:bin_to_list(Data),
-            Str = re:replace(StrData, "(^\\s+)|(\\s+$)", "", [global,{return,list}]),
-            io:format("User said ~p~n",[Str]),
-            case Str of
-                "logout" ->
-                    case logout(Username) of
-                        ok ->
-                            gen_tcp:send(Sock, <<"logout successful\n">>);
-                            %gen_tcp:close(Sock);
-                        _ ->
-                            gen_tcp:send(Sock,<<"logout error\n">>),
-                            logout(Username, Sock)
-                    end;
-                _ ->
-                    logout(Username, Sock)
-            end
-        end
-    .
-
-
-
-cicloJogo(Sock, Username, GameManager) -> % Faz a mediação entre o Cliente e o processo GameManager
-    receive
-        {line, Data} -> % Recebemos alguma coisa do processo GameManager
+        {line, Data} -> % line é dados do game manager
             %io:format("ENVIEI ESTES DADOS~p~n",[Data]),
             gen_tcp:send(Sock, Data),
             cicloJogo(Sock, Username, GameManager);
@@ -178,22 +156,22 @@ cicloJogo(Sock, Username, GameManager) -> % Faz a mediação entre o Cliente e o
             NewData = re:replace(Data, "(^\\s+)|(\\s+$)", "", [global,{return,list}]),
             case NewData of
                 "pontos" -> 
-                    io:format("Recebi pontos"),
+                    io:format("Recebi pontos~n"),
                     GameManager ! {pontos, self()},
                     cicloJogo(Sock, Username, GameManager);
                 "quit" ->
-                    io:format("Recebi quit"),
-                    GameManager ! {leave, self()},
-                    cicloJogo(Sock, Username, GameManager);
+                    io:format("Recebi quit~n"),
+                    statePid ! {leave, Username, self()},
+                    logout(Username),
+                    authenticator(Sock);
                 _ ->
-                    GameManager ! {keyPressed, Data, self()}, % Precisamos de saber quem foi que premiu a tecla!
+                    GameManager ! {keyPressed, Data, self()},
                     cicloJogo(Sock, Username, GameManager)
             end;
         {tcp_closed, _} ->
-            GameManager ! {leave, self()};
+            statePid ! {leave, Username, self()},
+            logout(Username);
         {tcp_error, _} ->
-            GameManager ! {leave, self()};
-        {gameEnd, Result} ->
-            gen_tcp:send(Sock, Result),
-            logout(Username, Sock)
+            statePid ! {leave, Username, self()},
+            logout(Username)
     end.

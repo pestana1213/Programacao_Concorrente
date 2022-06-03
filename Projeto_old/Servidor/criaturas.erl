@@ -1,55 +1,55 @@
 -module(criaturas).
 -export([novaCriatura/2,atualizaListaCriaturas/2,verificaColisoesCriaturaLista/2,atualizaCriatura/2]).
 -import(jogadores, [jogadorRaioMin/1]).
--import(auxiliar, [multiplicaVector/2, normalizaVector/1, meioVectores/2, adicionaPares/2, distancia/2, subtraiVectores/2,posiciona/1]).
+-import(auxiliar, [multiplicaVector/2, normalizaVector/1, meioVectores/2, adicionaPares/2, distancia/2,posiciona/2]).
 -import (math, [sqrt/1, pow/2, cos/1, sin/1, pi/0]).
 
 novaCriatura(Tipo,ListaObstaculos) ->
     Direcao = float(rand:uniform(360)),
     Tamanho = 50,
     Velocidade = 5.0,
-    Posicao = posiciona(ListaObstaculos),
+    Posicao = posiciona(50,ListaObstaculos),
     {Posicao, Direcao, Tamanho, Tipo, Velocidade}.
 
-    atualizaCriatura(Criatura, ListaObstaculos)->
-        {Posicao, Direcao, Tamanho, Tipo, Velocidade}=Criatura,
-        Radians = (Direcao * pi()) / 180,
-        VecDirecao = normalizaVector(multiplicaVector({cos(Radians), sin(Radians)}, Velocidade)),
-        NPosicao= adicionaPares(Posicao, VecDirecao),
-        {NovoXX, NovoYY} = NPosicao,
-        if 
-            NovoXX > 1200 - Tamanho/2 ->
-                NovoX = NovoXX - 10.0;
-            NovoXX < 0 + Tamanho/2 ->
-                NovoX = NovoXX + 10.0;
-            true ->
-                NovoX = NovoXX
-        end,
-        if 
-            NovoYY > 800 - Tamanho/2 ->
-                NovoY = NovoYY - 10.0;
-            NovoYY < 0 + Tamanho/2->
-                NovoY = NovoYY + 10.0;         
-            true ->
-                NovoY = NovoYY
-        end,
-        if 
-            ((NovoYY) > 800 - Tamanho/2) or ((NovoYY) < 0 + Tamanho/2) or ((NovoXX) < 0 + Tamanho/2) or ((NovoXX) > 1200 - Tamanho/2) ->
-                VecXA = Direcao-180.0;
-            true -> 
-                VecXA = Direcao + float(rand:uniform(1))*0.3
-        end,
-        if 
-            VecXA > 360 ->
-                VecX = VecXA - 360.0;
-            VecXA < 0 ->
-                VecX = VecXA + 360.0;
-            true ->
-                VecX = VecXA 
-        end,
+atualizaCriatura(Criatura, ListaObstaculos)->
+    {Posicao, Direcao, Tamanho, Tipo, Velocidade}=Criatura,
+    Radians = (Direcao * pi()) / 180,
+    VecDirecao = normalizaVector(multiplicaVector({cos(Radians), sin(Radians)}, Velocidade)),
+    NPosicao= adicionaPares(Posicao, VecDirecao),
+    {NovoXX, NovoYY} = NPosicao,
+    if 
+        NovoXX > 1300 - Tamanho/2 ->
+            NovoX = NovoXX - 10.0;
+        NovoXX < 0 + Tamanho/2 ->
+            NovoX = NovoXX + 10.0;
+        true ->
+            NovoX = NovoXX
+    end,
+    if 
+        NovoYY > 700 - Tamanho/2 ->
+            NovoY = NovoYY - 10.0;
+        NovoYY < 0 + Tamanho/2->
+            NovoY = NovoYY + 10.0;         
+        true ->
+            NovoY = NovoYY
+    end,
+    if 
+        ((NovoYY) > 700 - Tamanho/2) or ((NovoYY) < 0 + Tamanho/2) or ((NovoXX) < 0 + Tamanho/2) or ((NovoXX) > 1300 - Tamanho/2) ->
+            VecXA = Direcao-180.0;
+        true -> 
+            VecXA = Direcao + float(rand:uniform(1))*0.3
+    end,
+    if 
+        VecXA > 360 ->
+            VecX = VecXA - 360.0;
+        VecXA < 0 ->
+            VecX = VecXA + 360.0;
+        true ->
+            VecX = VecXA 
+    end,
 
-        Nposs = {NovoX, NovoY},
-        verificaColisaoObstaculos({Nposs, VecX, Tamanho, Tipo, Velocidade},ListaObstaculos).
+    Nposs = {NovoX, NovoY},
+    verificaColisaoObstaculos({Nposs, VecX, Tamanho, Tipo, Velocidade},ListaObstaculos).
 
 atualizaListaCriaturas(Criaturas, ListaObstaculos) ->
     [atualizaCriatura(Criatura, ListaObstaculos) || Criatura <- Criaturas].
@@ -68,7 +68,7 @@ verificaColisaoObstaculos(Criatura, ListaObstaculos) ->
         T1 or T2 or T3 ->
             Direcao = DirecaoX-180,
             Radians = (Direcao * pi()) / 180,
-            VecDirecao = multiplicaVector({cos(Radians), sin(Radians)}, 9),
+            VecDirecao = multiplicaVector({cos(Radians), sin(Radians)}, 20),
             NPosicao= adicionaPares(PosicaoA, VecDirecao);
         true ->
             Direcao = DirecaoX,

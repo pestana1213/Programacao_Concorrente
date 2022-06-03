@@ -1,5 +1,5 @@
 -module (login_manager).
--export( [start_Login_Manager/0, create_account/2, close_account/2, login/2, logout/1, online/0,stop/0]).
+-export( [start_Login_Manager/0, create_account/2, close_account/2, login/2, logout/1]).
 
 start_Login_Manager () ->
     Pid = spawn ( fun() -> loop ( #{} ) end ),
@@ -13,8 +13,6 @@ call(Request)->
     receive Res -> Res end.   % esperar receber resposta
 
 
-stop() -> call(stop).
-
 create_account(Username, Passwd) -> call({create_account,Username,Passwd}).
 
 close_account(Username, Passwd) -> call({close_account,Username,Passwd}).
@@ -23,10 +21,10 @@ login(Username, Passwd) -> call({login,Username,Passwd}).
 
 logout(Username) -> call({logout,Username}).
 
-online() -> call(online).
 
 
 loop(Map) ->
+    io:format("MAPA LOGINS~p~n",[maps:to_list(Map)]),
     receive
         {{create_account, Username, Pass}, From} ->
             case maps:find (Username,Map) of
@@ -44,7 +42,7 @@ loop(Map) ->
 
         {{close_account, Username, Pass}, From} ->
             case maps:find (Username, Map) of
-                {ok , {Pass, _ } } ->                       % _ -> uma coisa qualquer Ã© onde diz se esta online (T/F)
+                {ok , {Pass, _ } } ->                       % _ -> uma coisa qualquer onde diz se esta online (T/F)
                         From ! ok,
                         loop ( maps:remove (Username,Map) );
 
@@ -68,19 +66,10 @@ loop(Map) ->
         {{logout, Username }, From} ->
             case maps:find (Username,Map) of
                 {ok, {Pass,true}} ->
-                    From ! ok,
+                    From ! ok,          
                     loop ( maps:put ( Username, {Pass, false}, Map) );
                 _ ->
                     From ! invalid,
                     loop ( Map )
-            end;
-        
-
-        {online , From} ->
-            From ! {[ Username || {Username, { _, true} } <- maps:to_list(Map)],module},
-            loop ( Map );
-        
-        
-        {stop, From} ->
-            From ! ok
+            end
     end.

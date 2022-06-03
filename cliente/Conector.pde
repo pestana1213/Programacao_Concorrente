@@ -25,20 +25,20 @@ public class Conector {
 	public Socket getSocket(){return sock;} 
 	
     public void write(String s){
-    	  //System.out.println("Write: " + s);
+    	  System.out.println("Write: " + s);
     	  pw.println(s);
     	  pw.flush(); 
     }
     
         
     public String read(){
-      String str; //<>// //<>// //<>//
-        try{ //<>// //<>// //<>//
+      String str; //<>// //<>//
+        try{ //<>// //<>//
         	str = in.readLine();  
         	//System.out.println("Read : " + str);
         } catch(Exception e)
         {
-          return "";
+          return null;
         }
         return str;
     }

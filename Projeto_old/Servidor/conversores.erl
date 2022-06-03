@@ -1,6 +1,9 @@
 -module(conversores).
--export([formatState/1,formatarPontuacoes/1]).
+-export([formatState/1,formatarPontuacoes/1, formataTecla/1]).
 
+formataTecla( Data ) ->
+    Key = re:replace(Data, "(^\\s+)|(\\s+$)", "", [global,{return,list}]),
+    Key.
 
 jogador_para_string(Jogador) ->
     {{_,{X,Y}, Direcao, _, EnergiaAtual,Raio, _, _, _, _, _, _, _,_, Agilidade,Pontuacao},U} = Jogador,
@@ -13,7 +16,7 @@ jogadores_para_string([H]) -> jogador_para_string(H) ++ " ";
 jogadores_para_string([H|T]) -> jogador_para_string(H) ++ " " ++  jogadores_para_string(T).
 
 criatura_para_string(Criatura) ->
-    {{X,Y}, Direcao, _, _, _} = Criatura,
+    {{X,Y}, Direcao, Tamanho, _, _} = Criatura,
     Lista = [float_to_list(X, [{decimals, 3}]), float_to_list(Y, [{decimals, 3}]),float_to_list(Direcao, [{decimals, 3}])],
     string:join(Lista, " ").
 

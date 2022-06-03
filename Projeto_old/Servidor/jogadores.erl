@@ -1,36 +1,36 @@
 -module(jogadores).
 -export([novoJogador/1,acelerarFrente/1, viraDireita/1, viraEsquerda/1 ,atualizaJogadores/4]).
--import(auxiliar, [multiplicaVector/2, normalizaVector/1, meioVectores/2, adicionaPares/2, distancia/2, subtraiVectores/2,posiciona/1]).
+-import(auxiliar, [multiplicaVector/2, normalizaVector/1, adicionaPares/2, distancia/2,posiciona/2]).
 -import (math, [sqrt/1, pow/2, cos/1, sin/1, pi/0]).
 
 %Player = {true,Posicao, Direcao, Velocidade, Energia,Raio, AceleracaoLinear, AceleracaoAngular, EnergiaMax, GastoEnergia, GanhoEnergia, Arrasto, RaioMax,RaioMin, Agilidade}
 novoJogador(ListaObstaculos) ->
 
     %constantes
-    RaioMax = 200.0,
+    RaioMax = 220.0,
     RaioMin = 20.0,
     EnergiaMax = 20.0,
     Arrasto = 0.04,
-    AceleracaoLinear = 0.37,
+    AceleracaoLinear = 0.35,
     AceleracaoAngular = 0.2,
     GastoEnergia = 0.10,
-    GanhoEnergia= 0.028,
+    GanhoEnergia= 0.03,
 
     %variaveis
-    Posicao = posiciona(ListaObstaculos),
+    
     EnergiaAtual = 20.0,
     Velocidade = 0.30,
-    Raio=50.0,
+    Raio=60.0,
     Direcao = 0.0,
-    Agilidade = 1,
+    Agilidade = 1.0,
     Pontuacao = 0,
-
+    Posicao = posiciona(Raio,ListaObstaculos),
     {true,Posicao, Direcao, Velocidade, EnergiaAtual,Raio, AceleracaoLinear, AceleracaoAngular, EnergiaMax, GastoEnergia, GanhoEnergia, Arrasto, RaioMax,RaioMin, Agilidade,Pontuacao}.
 
 
 
 calculaVelocidadeMax(Raio) ->
-    VelocidadeMax = 400/Raio,
+    VelocidadeMax = 300/Raio,
     VelocidadeMax.
 
 
@@ -60,7 +60,7 @@ verificaColisaoObstaculos(Jogador, ListaObstaculos) ->
             E = true,
             DirecaoA = Direcao-180,
             Radians = (DirecaoA * pi()) / 180,
-            VecDirecao = multiplicaVector({cos(Radians), sin(Radians)}, 10),
+            VecDirecao = multiplicaVector({cos(Radians), sin(Radians)}, 20),
             NPosicao= adicionaPares(Posicao, VecDirecao);
     
         true ->
@@ -75,7 +75,7 @@ verificaColisaoObstaculos(Jogador, ListaObstaculos) ->
 verificaColisaoLimiteMapa (Jogador) ->
     {_,Posicao, _, _, _,Raio, _, _, _, _, _, _, _,_, _,_}=Jogador,
     {PosX,PosY} = Posicao,
-    if ((PosX + Raio/2) > 1200) or ((PosX - Raio/2) < 0) or ((PosY + Raio/2) > 800) or ((PosY - Raio/2) < 0) ->
+    if ((PosX + Raio/2) > 1300) or ((PosX - Raio/2) < 0) or ((PosY + Raio/2) > 700) or ((PosY - Raio/2) < 0) ->
         true;
     true ->
         false
@@ -107,10 +107,10 @@ atualizaColisaoVerdes( Jogador, Criaturas ) ->
     end,
     
     if 
-        Raio+(10*TamanhoLista) > RaioMax ->
+        Raio+((32.22222-0.1111111*Raio))*TamanhoLista > RaioMax ->
             NRaio = RaioMax;
         true ->
-            NRaio = Raio+(10*TamanhoLista)
+            NRaio = Raio+((32.22222-0.1111111*Raio))*TamanhoLista
     end,
 
 
@@ -149,7 +149,7 @@ movimentaJogador(Jogador) ->
 
     if 
         NRaio > RaioMin ->
-            NovoTamanho = NRaio - 0.02;
+            NovoTamanho = NRaio - 0.035;
         true ->
             NovoTamanho = NRaio
     end,
@@ -197,19 +197,31 @@ movimentaJogador(Jogador) ->
             Colidiu and (Tamanho1 < Tamanho2) and (Tamanho1 =< RaioMin1) ->         %perdeu
                 {false,NPosicao1, Direcao1, Velocidade1, Energia1, Tamanho1, AceleracaoLinear1, AceleracaoAngular1, EnergiaMax1, GastoEnergia1, GanhoEnergia1, Arrasto1, RaioMax1, RaioMin1, Agilidade1, Pontuacao1};
             Colidiu and (Tamanho1 < Tamanho2) and (Tamanho1 > RaioMin1) ->          %reset
-                novoJogador(ListaObstaculos);                                
-            Colidiu and (Tamanho2 < Tamanho1) ->          %o outro perdeu/resetou
                 if
-                    (Tamanho1 + 10)> RaioMax1 ->
-                        NTamanho1 = RaioMax1;
+                    (Tamanho1 - 10)< RaioMin1 ->
+                        NTamanho1 = RaioMin1;
                     true ->
-                        NTamanho1 = Tamanho1 + 10
+                        NTamanho1 = Tamanho1 - 10
                 end,
                 if
                     (Agilidade1 + 0.5) > 2.0 ->
                         NAgilidade1 = 2.0;
                     true ->
                         NAgilidade1 = Agilidade1 + 0.5
+                end,
+                {true,posiciona(NTamanho1,ListaObstaculos), 0.0,  0.30, 20.0, NTamanho1, AceleracaoLinear1, AceleracaoAngular1, EnergiaMax1, GastoEnergia1, GanhoEnergia1, Arrasto1, RaioMax1, RaioMin1, NAgilidade1, 0};                              
+            Colidiu and (Tamanho2 < Tamanho1) ->          %o outro perdeu/resetou
+                if
+                    (Tamanho1 + 20) > RaioMax1 ->
+                        NTamanho1 = RaioMax1;
+                    true ->
+                        NTamanho1 = Tamanho1 + 20
+                end,
+                if
+                    (Agilidade1 - 0.25) < 0.5 ->
+                        NAgilidade1 = 0.5;
+                    true ->
+                        NAgilidade1 = Agilidade1 - 0.25
                 end,
                 {E1,NPosicao1, Direcao1, Velocidade1, Energia1, NTamanho1, AceleracaoLinear1, AceleracaoAngular1, EnergiaMax1, GastoEnergia1, GanhoEnergia1, Arrasto1, RaioMax1, RaioMin1, NAgilidade1, Pontuacao1+1};
             true -> 

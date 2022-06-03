@@ -1,10 +1,10 @@
 -module (estado).
 -export ([start_state/0,atualizaMelhoresPontos/2]).
 -import (criaturas, [novaCriatura/2,atualizaListaCriaturas/2,verificaColisoesCriaturaLista/2]).
--import (jogadores, [novoJogador/1,acelerarFrente/1, viraDireita/1, viraEsquerda/1,atualizaJogadores/4 ]).   %%%%
--import (auxiliar, [multiplicaVector/2, normalizaVector/1, meioVectores/2, adicionaPares/2, distancia/2, subtraiVectores/2]).
+-import (jogadores, [novoJogador/1,acelerarFrente/1, viraDireita/1, viraEsquerda/1,atualizaJogadores/4 ]).   
 -import (timer, [send_after/3]).
--import (conversores, [formatState/1,formatarPontuacoes/1]).
+-import (auxiliar, [geraObstaculo/2]).
+-import (conversores, [formatState/1,formatarPontuacoes/1, formataTecla/1]).
 
 
 
@@ -18,7 +18,7 @@ start_state() ->
     .
 
 
-refresh (Pid) -> receive after 8 -> Pid ! {refresh, self()}, refresh(Pid) end.
+refresh (Pid) -> receive after 10 -> Pid ! {refresh, self()}, refresh(Pid) end.
 adicionarReds (Pid) -> receive after 5000 -> Pid ! {addReds, self()}, adicionarReds(Pid) end.
 adicionarVerdes (Pid) -> receive after 5000 -> Pid ! {addVerde, self()}, adicionarVerdes(Pid) end.
 
@@ -43,27 +43,37 @@ estado(Atuais_Jogadores, Espera_Jogadores) ->
             io:format("Recebi leave do User ~p ~n",[Username]),
             case length (Espera_Jogadores) of
                 0 -> 
-                    game ! {leave,{Username, UserProcess}},
-                    estado(Atuais_Jogadores -- [{Username, UserProcess}], Espera_Jogadores); 
-                true -> 
-                    game ! {leave,{Username, UserProcess}},
-                    [H | T] = Espera_Jogadores,
-                    {_, UP} = H,
-                    UP ! {comeca, game},
-                    game ! {geraJogador,H},
-                    estado(Atuais_Jogadores -- [{Username, UserProcess}] ++ H, T)
+                    game ! {leave,UserProcess},
+                    Lista = Atuais_Jogadores -- [{Username, UserProcess}],
+                    io:format("CASE 0 - A lista de jogadores ativos atuais ~p ~n",[Lista]),
+                    estado(Lista, Espera_Jogadores); 
+                _ -> 
+                    game ! {leave, UserProcess},
+                    io:format("A lista de jogadores ativos atuais ~p ~n",[Atuais_Jogadores]),
+                    io:format("Vou tirar o da lista ~p ~n",[{Username, UserProcess}]),
+                    Lista = Atuais_Jogadores -- [{Username, UserProcess}],
+                    io:format("Lista jogador removido ~p ~n",[Lista]),
+                    if 
+                        length (Espera_Jogadores) > 0 ->
+                            [H | T] = Espera_Jogadores,
+                            {_, UP} = H,
+                            UP ! {comeca, game},
+                            game ! {geraJogador,H},                            
+                            ListaA = Lista ++ [H];
+                        true ->
+                            T = [],
+                            ListaA = Lista
+                    end,
+                    estado(ListaA, T)
             end
     end
 .
 
-geraObstaculo(ListaObs,0) -> ListaObs;
-geraObstaculo(ListaObs,Numero) -> geraObstaculo(ListaObs++[{rand:uniform(950)+100,rand:uniform(550)+100,rand:uniform(50)+100}],Numero-1).
 
 novoEstado() ->
     %player, green, red, obstaculos, screensize
     ObstaculosLista = geraObstaculo([],3),
-    State = {[], [], [], ObstaculosLista, {1200,800}},
-
+    State = {[], [], [], ObstaculosLista, {1300,700}},
     io:fwrite("Estado novo Gerado: ~p ~n", [State]),
     State.
 
@@ -76,22 +86,9 @@ adicionaJogador(Estado,Jogador) ->
 removeJogador(Estado,Jogador) ->
     {ListaJogadores, ListaVerdes, ListaReds, ListaObstaculos, TamanhoEcra} = Estado,
     State = { ListaJogadores -- [Jogador], ListaVerdes, ListaReds, ListaObstaculos, TamanhoEcra},
-    io:fwrite("Estado: ~p ~n", [State]),
+    io:fwrite("Estado com jogador removido: ~p ~n", [State]),
     State.
 
-
-processKeyPressData( Data ) ->
-    Key = re:replace(Data, "(^\\s+)|(\\s+$)", "", [global,{return,list}]),
-    %io:format("Carregou na tecla ~p~n", [Key]),
-    Key.
-
-
-
-propagar_msg_aux(_,[]) -> true; %io:format("Mensagem foi propagada para todos!!! ~n");
-propagar_msg_aux(Msg,[H|T]) ->
-                %io:format("Propagar ~p  para ~p~n",[Msg,H]),	
-		H ! {line,Msg},
-		propagar_msg_aux(Msg,T). 
 
 
 
@@ -109,30 +106,28 @@ atualizaMelhoresPontos(Map,[H|T]) ->
             
 
             
-
-
-
 gameManager(Estado, MelhoresPontuacoes)->
-    %io:format("Game Manager a correr ~n"),
     receive
-        {keyPressed, Data, From} ->
-            %io:format("Entrei no keyPressed ~n"),
-            KeyPressed = processKeyPressData( Data ),
-            NovoEstado = updateKeyPressed(Estado,KeyPressed,From), 
-            %io:format("Estado Antigo~p~n",[Estado]), 
-            %io:format("Novo Estado~p~n",[NovoEstado]), 
-            gameManager(NovoEstado,MelhoresPontuacoes);
+        {geraJogador, From} ->
+            io:format("Vou gerar jogador~n"),    
+            gameManager(adicionaJogador(Estado,From),MelhoresPontuacoes);
         
         {pontos, From} ->
             Data = "Pontos" ++ " " ++ integer_to_list(length(maps:to_list(MelhoresPontuacoes))) ++ " " ++ formatarPontuacoes(maps:to_list(MelhoresPontuacoes)),
-            %io:format("ENVIEI ESTES DADOS~p~n",[Data]),
+            io:format("ENVIEI ESTES DADOS~p~n",[Data]),
             From ! {line,Data},
             %io:format("Pontuaçoes ~p~n",[formatarPontuacoes(maps:to_list(MelhoresPontuacoes))]), 
             gameManager(Estado,MelhoresPontuacoes);
 
-        {geraJogador, From} ->
-            io:format("Vou gerar jogador~n"),    
-            gameManager(adicionaJogador(Estado,From),MelhoresPontuacoes);
+
+        {keyPressed, Data, From} ->
+            %io:format("Entrei no keyPressed ~n"),
+            KeyPressed = formataTecla(Data),
+            NovoEstado = updateTeclas(Estado,KeyPressed,From), 
+            %io:format("Estado Antigo~p~n",[Estado]), 
+            %io:format("Novo Estado~p~n",[NovoEstado]), 
+            gameManager(NovoEstado,MelhoresPontuacoes);
+
             
         {refresh, _} ->
             %io:format("Vou fazer refresh~n"),
@@ -142,7 +137,7 @@ gameManager(Estado, MelhoresPontuacoes)->
             Pids = [Pid || {_, {User, Pid}} <- ListaJogadores ],
             %EstadoM = formatState(NovoEstado),
             %io:format("Estado String~p~n",[EstadoM]),
-            propagar_msg_aux(formatState(NovoEstado),Pids),
+            [ H ! {line,formatState(NovoEstado)} || H <- Pids],
             JogadoresPontos = [{User,P} || {{_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,P}, {User, _}} <- ListaJogadores ],
             %io:format("JogadoresPontos~p~n",[JogadoresPontos]),
             %io:format("Pontos melhores~p~n",[atualizaMelhoresPontos(MelhoresPontuacoes,JogadoresPontos)]), 
@@ -154,7 +149,7 @@ gameManager(Estado, MelhoresPontuacoes)->
             if
                 length(ListaJogadores) == 1->
                     [H|T] = ListaJogadores,
-                    {_, {User1, Pid1}} = H,
+                    {_, {_, Pid1}} = H,
                     if
                         Pid1 == From ->
                             gameManager(removeJogador(Estado,H),MelhoresPontuacoes);
@@ -162,9 +157,9 @@ gameManager(Estado, MelhoresPontuacoes)->
                             gameManager(Estado,MelhoresPontuacoes)
                     end;
                 length(ListaJogadores) == 2 ->
-                    [H1|H2] = ListaJogadores,
-                    {_, {User1, Pid1}} = H1,
-                    {_, {User2, Pid2}} = H2,
+                    [H1,H2 | T] = ListaJogadores,
+                    {_, {_, Pid1}} = H1,
+                    {_, {_, Pid2}} = H2,
                     if
                         Pid1 == From ->
                             gameManager(removeJogador(Estado,H1),MelhoresPontuacoes);
@@ -174,11 +169,10 @@ gameManager(Estado, MelhoresPontuacoes)->
                             gameManager(Estado,MelhoresPontuacoes)
                     end;
                 length(ListaJogadores) == 3 ->
-                    [H1|T] = ListaJogadores,
-                    {_, {User1, Pid1}} = H1,
-                    [H2|H3] = T,
-                    {_, {User2, Pid2}} = H2,
-                    {_, {User3, Pid3}} = H3,
+                    [H1, H2, H3 |T] = ListaJogadores,
+                    {_, {_, Pid1}} = H1,
+                    {_, {_, Pid2}} = H2,
+                    {_, {_, Pid3}} = H3,
                     if
                         Pid1 == From ->
                             gameManager(removeJogador(Estado,H1),MelhoresPontuacoes);
@@ -242,6 +236,7 @@ update(Estado) ->
     [statePid ! {leave,U,P} || {U,P} <- Derrotados],
     %io:fwrite("Vencedores: ~p ~n", [Vencedores]),
     %io:fwrite("Derrotados: ~p ~n", [Derrotados]),
+    
     {Vencedores, LV, LR, ListaObstaculos, TamanhoEcra}.
 
 
@@ -261,7 +256,7 @@ descobreJogador([],Pid,KeyPressed) -> [];
 descobreJogador([{J, {U,Pid}} | T],Pid,KeyPressed) -> updateTecla({J, {U,Pid}},KeyPressed)++T;
 descobreJogador([H | T],Pid,KeyPressed) -> [H]++descobreJogador(T,Pid,KeyPressed).
 
-updateKeyPressed (Estado,KeyPressed,Pid) ->
+updateTeclas(Estado,KeyPressed,Pid) ->
     {ListaJogadores, ListaVerdes, ListaReds, ListaObstaculos, TamanhoEcra} = Estado,
     ListaJogadorAtual = descobreJogador(ListaJogadores,Pid,KeyPressed),
     {ListaJogadorAtual, ListaVerdes, ListaReds, ListaObstaculos, TamanhoEcra}.
@@ -275,4 +270,3 @@ updateTecla (JogadorAtual,KeyPressed) ->
         true -> NovoJogador = J
     end,
     [{NovoJogador,{U,Pid}}].
-
