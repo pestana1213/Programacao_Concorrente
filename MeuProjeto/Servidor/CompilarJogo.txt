@@ -1,0 +1,9 @@
+cd("C:/Users/Dimitri/Desktop/Trabalho PC/PC2018-master/Servidor").
+c(server).
+c(jogadores).
+c(criaturas).
+c(auxiliar).
+c(estado).
+c(conversores).
+c(login_manager).
+server:start().
