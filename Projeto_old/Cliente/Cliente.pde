@@ -1,4 +1,4 @@
-// Need G4P library //<>// //<>// //<>// //<>// //<>// //<>//
+// Need G4P library //<>// //<>// //<>// //<>// //<>// //<>// //<>//
 import g4p_controls.*;
 import java.util.*;
 import java.lang.*;
@@ -47,8 +47,7 @@ int f = 0;
 int conta = 0;
 Runnable runnablePontos;
 
-Jogo jogo = new Jogo(new ArrayList<Jogador>(), new ArrayList<Criatura>(), new ArrayList<Obstaculo>(), new HashMap<String, Integer>());
-
+Jogo jogo = new Jogo(new ArrayList<Jogador>(), new ArrayList<Cristal>(), new HashMap<String, Integer>());
 PImage red, bg;
 Conector con = new Conector();
 
@@ -103,6 +102,10 @@ public void fecha_ranking_window(GWindow window) {
   apresentarPontos = false;
 }
 
+void mouseMoved() {
+  //println(mouseX,mouseY);
+}
+
 void keyPressed_Handler(PApplet appc, GWinData data, KeyEvent event) {
   if (appc.keyPressed) {
     //println("Entrei no key pressed key = " + appc.key);
@@ -138,12 +141,12 @@ public void menu() {
 
   titulo_label = new GLabel(this, 300, 40, 700, 60);
   titulo_label.setTextAlign(GAlign.CENTER, GAlign.MIDDLE);
-  titulo_label.setText("PROGRAMAÇÃO CONCORRENTE 2020/2021");
+  titulo_label.setText("PROGRAMAÇÃO CONCORRENTE 2021/2022");
   titulo_label.setOpaque(false);
 
   titulo_label = new GLabel(this, 300, 80, 700, 60);
   titulo_label.setTextAlign(GAlign.CENTER, GAlign.TOP);
-  titulo_label.setText("CHOQUE DE GLUTÕES");
+  titulo_label.setText("Battle Royale");
   titulo_label.setOpaque(false);
 
   login_button = new GButton(this, 500, 300, 300, 70);
@@ -343,7 +346,7 @@ public void criaJogoWindow() {
   jogo_pontos_button.setLocalColorScheme(GCScheme.SCHEME_15);
   jogo_pontos_button.addEventHandler(this, "jogo_pontos_button_click");
   jogo_window.addDrawHandler(this, "drawJogo");
-  jogo_window.addKeyHandler(this, "keyPressed_Handler");
+  jogo_window.addMouseHandler(this, "mouseMoved");
   jogo_window.addOnCloseHandler(this, "close_jogo");
   jogo_window.setVisible(false);
   
@@ -761,26 +764,26 @@ public synchronized void updateJogo(String res) {
     for (int i = 0; i < numJogadores; i++) {
 
       String nome = new String(stk.nextToken());
-      int pontuacao = new Integer(stk.nextToken()).intValue();
+      int vitorias = new Integer(stk.nextToken()).intValue();
+      int tipo = new Integer(stk.nextToken()).intValue();
       float posX = new Float(stk.nextToken()).floatValue();
       float posY = new Float(stk.nextToken()).floatValue();
       float raio = new Float(stk.nextToken()).floatValue();
       float dir = new Float(stk.nextToken()).floatValue();
-      float energia = new Float(stk.nextToken()).floatValue();
       float agilidade = new Float(stk.nextToken()).floatValue();
-
+      
       if (lastNome.equals(nome)) {      
-        energiaAtual = energia;
         raioAtual = raio;
         agilidadeAtual = agilidade;
+        tipo = tipo;
       }
 
-      Jogador p = new Jogador (nome, pontuacao, posX, posY, raio, dir, energia, agilidade,lastNome);
+      Jogador p = new Jogador (nome, posX, posY, raio, dir, agilidade,lastNome,tipo,vitorias);
       jogadores.add(p);
-      pontos.put(nome, pontuacao);
+      pontos.put(nome, vitorias);
     }
 
-    ArrayList<Criatura> criaturas = new ArrayList<Criatura>();
+    ArrayList<Cristal> cristais = new ArrayList<Cristal>();
 
     int numVerdes = new Integer(stk.nextToken()).intValue();
 
@@ -789,11 +792,10 @@ public synchronized void updateJogo(String res) {
       float posX = new Float(stk.nextToken()).floatValue();
 
       float posY = new Float(stk.nextToken()).floatValue();
-      float dir = new Float(stk.nextToken()).floatValue();
       int tipo = 0;
 
-      Criatura c = new Criatura (posX, posY, dir, tipo);
-      criaturas.add(c);
+      Cristal c = new Cristal (posX, posY, tipo);
+      cristais.add(c);
     }
 
     int numVermelhos = new Integer(stk.nextToken()).intValue();
@@ -802,28 +804,26 @@ public synchronized void updateJogo(String res) {
 
       float posX = new Float(stk.nextToken()).floatValue();
       float posY = new Float(stk.nextToken()).floatValue();
-      float dir = new Float(stk.nextToken()).floatValue();
       int tipo = 1;
 
-      Criatura c = new Criatura (posX, posY, dir, tipo);
-      criaturas.add(c);
+      Cristal c = new Cristal (posX, posY, tipo);
+      cristais.add(c);
     }
 
-    ArrayList<Obstaculo> obstaculos = new ArrayList<Obstaculo>();
+    int numAzuis = new Integer(stk.nextToken()).intValue();
 
-    int numObstaculos = new Integer(stk.nextToken()).intValue();
+    for (int i = 0; i < numAzuis; i++) {
 
-    for (int i = 0; i < numObstaculos; i++) {
+      float posX = new Float(stk.nextToken()).floatValue();
+      float posY = new Float(stk.nextToken()).floatValue();
+      int tipo = 2;
 
-      int posX = new Integer(stk.nextToken()).intValue();
-      int posY = new Integer(stk.nextToken()).intValue();
-      int tamanho = new Integer(stk.nextToken()).intValue();
-
-      Obstaculo o = new Obstaculo (posX, posY, tamanho);
-      obstaculos.add(o);
+      Cristal c = new Cristal (posX, posY, tipo);
+      cristais.add(c);
     }
 
-    jogo.update (jogadores, criaturas, obstaculos, pontos);
+
+    jogo.update (jogadores, cristais, pontos);
     
   }
   }

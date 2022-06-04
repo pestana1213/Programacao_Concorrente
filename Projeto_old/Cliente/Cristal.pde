@@ -1,20 +1,18 @@
 
-class Criatura {
+class Cristal {
   
   public float velocidade = 1;
   public float posX;
   public float posY;
   //public PVector pos;
   public float dir;
-  public int tipo;   // 0 = green , 1 = red
+  public int tipo;   // 0 = green , 1 = vermelho arrozado, 2 = azul
   public float tam;
-
  
-  public Criatura( float posX, float posY, float dir, int tipo) {
+  public Cristal( float posX, float posY, int tipo) {
     //this.pos = new PVector(posX, posY);
     this.posX = posX;
     this.posY = posY;
-    this.dir = dir;
     this.tipo = tipo;
     this.tam = 50;
   }
@@ -31,7 +29,8 @@ class Criatura {
         
     appc.noStroke();
     if(this.tipo == 0) appc.fill(color(0,255,0));
-    if(this.tipo == 1) appc.fill(color(255,0,0));
+    if(this.tipo == 1) appc.fill(color(255,20,147));
+    if(this.tipo == 2 ) appc.fill(color(0,0,255)); 
     appc.ellipse(this.posX,this.posY,this.tam,this.tam);
     
     

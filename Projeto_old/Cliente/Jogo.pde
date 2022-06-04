@@ -8,46 +8,37 @@ import java.util.HashMap;
 class Jogo {
 
   ArrayList<Jogador> players;
-  ArrayList<Criatura> criaturas;
-  ArrayList<Obstaculo> obstaculos;
-  HashMap<String, Integer> pontos;
-  //float thisPlayerPoints;
-  //float adversaryPoints;
+  ArrayList<Cristal> cristais;
+  HashMap<String, Integer> vitorias; 
   Lock l;
 
 
 
-  public Jogo (ArrayList<Jogador> players, ArrayList<Criatura> criaturas, ArrayList<Obstaculo> obstaculos, HashMap<String, Integer> pontos) {
+  public Jogo (ArrayList<Jogador> players, ArrayList<Cristal> cristais,HashMap<String, Integer> vitorias) {
 
       this.players  = players;
-      this.criaturas = criaturas;
-      this.obstaculos = obstaculos;
-      this.pontos = pontos;
+      this.cristais = cristais;
+      this.vitorias = vitorias;
       this.l = new ReentrantLock();
   }
 
-  void update (ArrayList<Jogador> players, ArrayList<Criatura> criaturas, ArrayList<Obstaculo> obstaculos, HashMap<String, Integer> pontos) {
+  void update (ArrayList<Jogador> players, ArrayList<Cristal> cristais,HashMap<String, Integer> vitorias) {
 
     this.l.lock();
     try {
       this.players  = players;
-      this.criaturas = criaturas;
-      this.obstaculos = obstaculos;
-      this.pontos = pontos;
+      this.cristais = cristais;
+      this.vitorias = vitorias;
     }finally{
       this.l.unlock();
     }
   }
 
 
-  void draw( PApplet appc) {
+   void draw( PApplet appc) {
 
-    for(Criatura c: this.criaturas ) {
+    for(Cristal c: this.cristais ) {
         c.draw(appc);
-    }
-
-    for(Obstaculo o: this.obstaculos) {
-        o.draw(appc);
     }
     
     for(Jogador p: this.players) {
@@ -55,7 +46,7 @@ class Jogo {
     }
     
     StringBuilder sb = new StringBuilder();
-    Map<String, Integer> aux = sortByValue(this.pontos);
+    Map<String, Integer> aux = sortByValue(this.vitorias);
     for (Map.Entry<String, Integer> entry : aux.entrySet()) {
       sb.append(entry.getKey() + " = " + + entry.getValue() + "\n");
 
@@ -63,6 +54,6 @@ class Jogo {
     
     scores.setText(sb.toString());
     
-  }
+  } 
   
 }

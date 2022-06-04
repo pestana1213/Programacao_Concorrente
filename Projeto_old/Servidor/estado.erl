@@ -29,7 +29,7 @@ estado(Atuais_Jogadores, Espera_Jogadores) ->
         {ready, Username, UserProcess} -> 
             io:format("len ~p ~n", [length (Atuais_Jogadores)]),   
             if
-                length (Atuais_Jogadores) == 3 ->             
+                length (Atuais_Jogadores) == 8 ->             
                     io:format("Recebi ready de ~p mas ele vai esperar ~n", [Username]),                                                     % Recebemos ready de um user mas o jogo está cheio, vai esperar
                     estado(Atuais_Jogadores, Espera_Jogadores ++ [{Username, UserProcess}]);      %Adicionamos lo entao aos jogadores em espera
                 true -> 
@@ -54,7 +54,7 @@ estado(Atuais_Jogadores, Espera_Jogadores) ->
                     Lista = Atuais_Jogadores -- [{Username, UserProcess}],
                     io:format("Lista jogador removido ~p ~n",[Lista]),
                     if 
-                        length (Espera_Jogadores) > 0 ->
+                        length (Espera_Jogadores) > 2 ->
                             [H | T] = Espera_Jogadores,
                             {_, UP} = H,
                             UP ! {comeca, game},

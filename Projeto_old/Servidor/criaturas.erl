@@ -1,21 +1,18 @@
 -module(criaturas).
--export([novaCriatura/2,atualizaListaCriaturas/2,verificaColisoesCriaturaLista/2,atualizaCriatura/2]).
+-export([novaCriatura/1,atualizaListaCriaturas/2,verificaColisoesCriaturaLista/2,atualizaCriatura/2]).
 -import(jogadores, [jogadorRaioMin/1]).
 -import(auxiliar, [multiplicaVector/2, normalizaVector/1, meioVectores/2, adicionaPares/2, distancia/2,posiciona/2]).
 -import (math, [sqrt/1, pow/2, cos/1, sin/1, pi/0]).
 
-novaCriatura(Tipo,ListaObstaculos) ->
-    Direcao = float(rand:uniform(360)),
+novaCriatura(Tipo) ->
     Tamanho = 50,
-    Velocidade = 5.0,
-    Posicao = posiciona(50,ListaObstaculos),
-    {Posicao, Direcao, Tamanho, Tipo, Velocidade}.
+    Posicao = posiciona(50,),
+    {Posicao, Tamanho, Tipo}.
 
-atualizaCriatura(Criatura, ListaObstaculos)->
-    {Posicao, Direcao, Tamanho, Tipo, Velocidade}=Criatura,
-    Radians = (Direcao * pi()) / 180,
-    VecDirecao = normalizaVector(multiplicaVector({cos(Radians), sin(Radians)}, Velocidade)),
+atualizaCriatura(Criatura)->
+    {Posicao, Tamanho, Tipo}=Criatura,
     NPosicao= adicionaPares(Posicao, VecDirecao),
+
     {NovoXX, NovoYY} = NPosicao,
     if 
         NovoXX > 1300 - Tamanho/2 ->
@@ -49,10 +46,9 @@ atualizaCriatura(Criatura, ListaObstaculos)->
     end,
 
     Nposs = {NovoX, NovoY},
-    verificaColisaoObstaculos({Nposs, VecX, Tamanho, Tipo, Velocidade},ListaObstaculos).
 
-atualizaListaCriaturas(Criaturas, ListaObstaculos) ->
-    [atualizaCriatura(Criatura, ListaObstaculos) || Criatura <- Criaturas].
+atualizaListaCriaturas(Criaturas) ->
+    [atualizaCriatura(Criatura) || Criatura <- Criaturas].
 
 
 
