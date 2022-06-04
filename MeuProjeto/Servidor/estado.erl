@@ -1,7 +1,7 @@
 -module (estado).
 -export ([start_state/0,atualizaMelhoresPontos/2]).
 -import (criaturas, [novaCriatura/2,atualizaListaCriaturas/2,verificaColisoesCriaturaLista/2]).
--import (jogadores, [novoJogador/1,acelerarFrente/1, viraDireita/1, viraEsquerda/1,atualizaJogadores/4 ]).   
+-import (jogadores, [novoJogador/1,acelerarFrente/1, viraDireita/1, viraEsquerda/1,atualizaJogadores/4,calculaVelocidadeMax/1 ]).   
 -import (timer, [send_after/3]).
 -import (auxiliar, [geraObstaculo/2]).
 -import (conversores, [formatState/1,formatarPontuacoes/1, formataTecla/1]).
@@ -120,10 +120,14 @@ gameManager(Estado, MelhoresPontuacoes)->
             gameManager(Estado,MelhoresPontuacoes);
 
 
-        {keyPressed, Data, From} ->
-            %io:format("Entrei no keyPressed ~n"),
-            KeyPressed = formataTecla(Data),
-            NovoEstado = updateTeclas(Estado,KeyPressed,From), 
+        {Coordenadas, Data, From} ->
+            
+            Coordenadas = formataTecla(Data),
+
+            Coordenadas = string:tokens(Coordenadas, " "),
+            %io:format("X ~p~n", [X]),
+            %io:format("Y ~p~n", [Y]),
+            NovoEstado = updateTeclas(Estado,Coordenadas,From), 
             %io:format("Estado Antigo~p~n",[Estado]), 
             %io:format("Novo Estado~p~n",[NovoEstado]), 
             gameManager(NovoEstado,MelhoresPontuacoes);
@@ -252,21 +256,30 @@ filtrar([{_,{U,P}}|T],{V,D}) -> filtrar(T,{V,D++[{U,P}]}).
 
 
 
-descobreJogador([],Pid,KeyPressed) -> [];
-descobreJogador([{J, {U,Pid}} | T],Pid,KeyPressed) -> updateTecla({J, {U,Pid}},KeyPressed)++T;
-descobreJogador([H | T],Pid,KeyPressed) -> [H]++descobreJogador(T,Pid,KeyPressed).
+descobreJogador([],Pid,Coordenadas) -> [];
+descobreJogador([{J, {U,Pid}} | T],Pid,Coordenadas) -> updateTecla({J, {U,Pid}},Coordenadas)++T;
+descobreJogador([H | T],Pid,Coordenadas) -> [H]++descobreJogador(T,Pid,Coordenadas).
 
-updateTeclas(Estado,KeyPressed,Pid) ->
+updateTeclas(Estado,Coordenadas,Pid) ->
     {ListaJogadores, ListaVerdes, ListaReds, ListaObstaculos, TamanhoEcra} = Estado,
-    ListaJogadorAtual = descobreJogador(ListaJogadores,Pid,KeyPressed),
+    ListaJogadorAtual = descobreJogador(ListaJogadores,Pid,Coordenadas),
     {ListaJogadorAtual, ListaVerdes, ListaReds, ListaObstaculos, TamanhoEcra}.
 
-updateTecla (JogadorAtual,KeyPressed) ->
+updateTecla (JogadorAtual,Coordenadas) ->
     {J,{U,Pid}} = JogadorAtual,
+    [X,Y] = Coordenadas,
+    
+    
+    {E,Posicao, Direcao, Velocidade, Energia,Raio,  AceleracaoLinear, AceleracaoAngular, EnergiaMax, GastoEnergia, GanhoEnergia, Arrasto, RaioMax,RaioMin,Agilidade,Pontuacao} = J,
+    io:format("DIRECAO ~p~n", [Direcao]),
+
+
     if
-        KeyPressed == "w" -> NovoJogador = acelerarFrente(J);
-        KeyPressed == "a" -> NovoJogador = viraDireita(J);
-        KeyPressed == "d" -> NovoJogador = viraEsquerda(J);
+        Coordenadas == "w" -> NovoJogador = acelerarFrente(J);
+        Coordenadas == "a" -> NovoJogador = viraDireita(J);
+        Coordenadas == "d" -> NovoJogador = viraEsquerda(J);
         true -> NovoJogador = J
     end,
+    
     [{NovoJogador,{U,Pid}}].
+

@@ -102,8 +102,8 @@ public void fecha_ranking_window(GWindow window) {
   apresentarPontos = false;
 }
 
-void mouseMoved() {
-  //println(mouseX,mouseY);
+public void mouseMoved(PApplet applet, GWinData windata, MouseEvent ouseevent)  {
+  con.write(ouseevent.getX() + " " + ouseevent.getY());
 }
 
 void keyPressed_Handler(PApplet appc, GWinData data, KeyEvent event) {
@@ -338,8 +338,10 @@ public void close_login_window (GWindow window) {
 } 
 
 public void criaJogoWindow() {
- 
+  jogo_window = null;
   jogo_window = GWindow.getWindow(this, "Jogo", 0, 0, 1300, 700, JAVA2D);
+  jogo_window.addMouseHandler(this, "mouseMoved");
+
   jogo_window.setActionOnClose(G4P.CLOSE_WINDOW);
   jogo_window.setVisible(false);
   jogo_pontos_button = new GButton(jogo_window, 1260, 0, 40, 35);
@@ -347,7 +349,6 @@ public void criaJogoWindow() {
   jogo_pontos_button.setLocalColorScheme(GCScheme.SCHEME_15);
   jogo_pontos_button.addEventHandler(this, "jogo_pontos_button_click");
   jogo_window.addDrawHandler(this, "drawJogo");
-  jogo_window.addMouseHandler(this, "mouseMoved");
   jogo_window.addOnCloseHandler(this, "close_jogo");
   jogo_window.setVisible(false);
   
@@ -734,7 +735,7 @@ public synchronized void updateJogo(String res) {
   {
    
 
-  println("li isto " + res); //<>// //<>// //<>//
+  //println("li isto " + res); //<>// //<>// //<>//
   StringTokenizer stk = new StringTokenizer(res, " ");
 
   if (stk.nextToken().equals("Pontos")) {
@@ -830,7 +831,7 @@ public synchronized void updateJogo(String res) {
   }
   catch (Exception e)
   {
-    println(e);
+    //println(e);
   }
   
 }
