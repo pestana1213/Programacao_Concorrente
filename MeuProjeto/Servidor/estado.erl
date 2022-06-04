@@ -122,12 +122,13 @@ gameManager(Estado, MelhoresPontuacoes)->
 
         {Coordenadas, Data, From} ->
             
-            Coordenadas = formataTecla(Data),
+            
+            Coordenadas1 = formataTecla(Data),
 
-            Coordenadas = string:tokens(Coordenadas, " "),
+            Coordenadas2 = string:tokens(Coordenadas1, " "),
             %io:format("X ~p~n", [X]),
             %io:format("Y ~p~n", [Y]),
-            NovoEstado = updateTeclas(Estado,Coordenadas,From), 
+            NovoEstado = updateTeclas(Estado,Coordenadas2,From), 
             %io:format("Estado Antigo~p~n",[Estado]), 
             %io:format("Novo Estado~p~n",[NovoEstado]), 
             gameManager(NovoEstado,MelhoresPontuacoes);
