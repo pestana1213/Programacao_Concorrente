@@ -25,6 +25,7 @@ class Jogo {
   void update (ArrayList<Jogador> players, ArrayList<Cristal> cristais,HashMap<String, Integer> vitorias) {
 
     this.l.lock();
+    println("Teste UPDATE");
     try {
       this.players  = players;
       this.cristais = cristais;

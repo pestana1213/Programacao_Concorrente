@@ -7,7 +7,7 @@ formataTecla( Data ) ->
 
 jogador_para_string(Jogador) ->
     {{_,{X,Y}, Direcao, _, EnergiaAtual,Raio, _, _, _, _, _, _, _,_, Agilidade,Pontuacao},U} = Jogador,
-    Lista = [U,integer_to_list(Pontuacao),float_to_list(X, [{decimals, 3}]), float_to_list(Y, [{decimals, 3}]), float_to_list(Raio, [{decimals, 3}]),float_to_list(Direcao, [{decimals, 3}]), float_to_list(EnergiaAtual, [{decimals, 3}]), float_to_list(Agilidade, [{decimals, 3}])],
+    Lista = [U,integer_to_list(Pontuacao),integer_to_list(Pontuacao),float_to_list(X, [{decimals, 3}]), float_to_list(Y, [{decimals, 3}]), float_to_list(Raio, [{decimals, 3}]),float_to_list(Direcao, [{decimals, 3}]),  float_to_list(Agilidade, [{decimals, 3}])],
     string:join(Lista, " ").
 
 
@@ -17,7 +17,7 @@ jogadores_para_string([H|T]) -> jogador_para_string(H) ++ " " ++  jogadores_para
 
 criatura_para_string(Criatura) ->
     {{X,Y}, Direcao, Tamanho, _, _} = Criatura,
-    Lista = [float_to_list(X, [{decimals, 3}]), float_to_list(Y, [{decimals, 3}]),float_to_list(Direcao, [{decimals, 3}])],
+    Lista = [float_to_list(X, [{decimals, 3}]), float_to_list(Y, [{decimals, 3}])],
     string:join(Lista, " ").
 
 
@@ -28,7 +28,7 @@ criaturas_para_string([H|T]) -> criatura_para_string(H) ++ " " ++ criaturas_para
 
 obstaculo_para_string(Obstaculo) ->
     {X,Y,Tamanho} = Obstaculo,
-    Lista = [integer_to_list(X), integer_to_list(Y),integer_to_list(Tamanho)],
+    Lista = [integer_to_list(X), integer_to_list(Y)],
     string:join(Lista, " ").
 
 
