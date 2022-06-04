@@ -285,12 +285,14 @@ updateTecla (JogadorAtual,Coordenadas) ->
 
     Angulo = acos(Cos) * 180 / pi(),
     io:format("DIRECAO ~p~n", [Direcao]),
-
+    io:format("DIRECAO ~p~n", [VecDirecao]),
+    io:format("Angulo ~p~n", [Angulo]),
 
     if
         Angulo == 0 ->
             NovoJogador = acelerarFrente(J);
         Angulo > 0 ->
+            
             NovoJogador = viraDireita(J);
         true ->
             NovoJogador = viraEsquerda(J)
@@ -302,6 +304,8 @@ updateTecla (JogadorAtual,Coordenadas) ->
     %    Coordenadas == "d" -> NovoJogador = viraEsquerda(J);
     %    true -> NovoJogador = J
     %end,
+    
+
     
     [{NovoJogador,{U,Pid}}].
 
