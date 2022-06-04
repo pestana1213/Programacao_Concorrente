@@ -275,7 +275,7 @@ updateTecla (JogadorAtual,Coordenadas) ->
     {E,Posicao, Direcao, Velocidade, Energia,Raio,  AceleracaoLinear, AceleracaoAngular, EnergiaMax, GastoEnergia, GanhoEnergia, Arrasto, RaioMax,RaioMin,Agilidade,Pontuacao} = J,
     
     {X,Y} = Posicao,
-    VecDirecao = normalizaVector({converterInt(X),converterInt(Y)}),
+    VecDirecao = normalizaVector({X,Y}),
     {X1,Y1} = VecDirecao,
     
     if 
