@@ -1,13 +1,17 @@
 -module (server).
 -export ([start/0]).
--import (login_manager, [start_Login_Manager/0, create_account/2, close_account/2, login/2, logout/1]). 
+-import (login_manager, [start_Login_Manager/1, create_account/2, close_account/2, login/2, logout/1]). 
 -import (estado, [start_state/0]). 
 
 start () ->
     io:format("Iniciei o Server~n"),
     PidState = spawn ( fun() -> estado:start_state() end),  %Iniciar o processo com o estado do servidor
     register(state,PidState),
-    register(login_manager, spawn( fun() -> login_manager:start_Login_Manager() end)), % Login manager
+
+    {_, L} = file:consult("Logins.txt"),
+    Mapa = maps:from_list(L),
+
+    register(login_manager, spawn( fun() -> login_manager:start_Login_Manager(Mapa) end)), % Login manager
     Port = 12345,
     {ok, Socket} = gen_tcp:listen(Port, [binary, {packet, line}, {reuseaddr, true}]),    %Socket
     acceptor(Socket).

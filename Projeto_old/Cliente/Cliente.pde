@@ -120,9 +120,10 @@ public void draw() {
 
 public void menu() {
 
- //ipLido = "192.168.1.69";
- //portaLida = "12345"; 
- //boolean ok = con.connect(ipLido, Integer.parseInt(portaLida));  
+   //ipLido = "192.168.1.69";
+   ipLido = "localhost";
+   portaLida = "12345"; 
+   boolean ok = con.connect(ipLido, Integer.parseInt(portaLida));  
 
   this.noLoop();
   G4P.messagesEnabled(false);
