@@ -3,8 +3,9 @@
 -import (criaturas, [novaCriatura/2,atualizaListaCriaturas/2,verificaColisoesCriaturaLista/2]).
 -import (jogadores, [novoJogador/1,acelerarFrente/1, viraDireita/1, viraEsquerda/1,atualizaJogadores/4,calculaVelocidadeMax/1 ]).   
 -import (timer, [send_after/3]).
--import (auxiliar, [geraObstaculo/2]).
+-import (auxiliar, [multiplicaVector/2, geraObstaculo/2, normalizaVector/1]).
 -import (conversores, [formatState/1,formatarPontuacoes/1, formataTecla/1]).
+-import (math, [sqrt/1, pow/2, acos/1, cos/1, sin/1, pi/0]).
 
 
 
@@ -268,19 +269,39 @@ updateTeclas(Estado,Coordenadas,Pid) ->
 
 updateTecla (JogadorAtual,Coordenadas) ->
     {J,{U,Pid}} = JogadorAtual,
-    [X,Y] = Coordenadas,
+    [X2,Y2] = Coordenadas,
     
     
     {E,Posicao, Direcao, Velocidade, Energia,Raio,  AceleracaoLinear, AceleracaoAngular, EnergiaMax, GastoEnergia, GanhoEnergia, Arrasto, RaioMax,RaioMin,Agilidade,Pontuacao} = J,
+    
+    Radians = (Direcao * pi()) / 180,
+    VecDirecao = normalizaVector(multiplicaVector({cos(Radians), sin(Radians)}, Velocidade)),
+    {X1,Y1} = VecDirecao,
+    
+    if 
+        ((X1 == 0) or (Y1 == 0)) -> Cos = 0;
+        true -> Cos = (X1*X2 + Y1*Y2) / (sqrt(X1*X1 + Y1*Y1) * sqrt(X2*X2 + Y2*Y2))
+    end,
+
+    Angulo = acos(Cos) * 180 / pi(),
     io:format("DIRECAO ~p~n", [Direcao]),
 
 
     if
-        Coordenadas == "w" -> NovoJogador = acelerarFrente(J);
-        Coordenadas == "a" -> NovoJogador = viraDireita(J);
-        Coordenadas == "d" -> NovoJogador = viraEsquerda(J);
-        true -> NovoJogador = J
+        Angulo == 0 ->
+            NovoJogador = acelerarFrente(J);
+        Angulo > 0 ->
+            NovoJogador = viraDireita(J);
+        true ->
+            NovoJogador = viraEsquerda(J)
     end,
+
+    %if
+    %    Coordenadas == "w" -> NovoJogador = acelerarFrente(J);
+    %    Coordenadas == "a" -> NovoJogador = viraDireita(J);
+    %    Coordenadas == "d" -> NovoJogador = viraEsquerda(J);
+    %    true -> NovoJogador = J
+    %end,
     
     [{NovoJogador,{U,Pid}}].
 

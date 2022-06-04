@@ -31,7 +31,11 @@ posiciona(Raio,ListaObstaculos)->
 normalizaVector(Vec) ->
     {X, Y} = Vec,
     D = sqrt( pow(X,2) + pow(Y,2) ),
-    { X/D, Y/D }.
+    if 
+        D == 0 -> {0, 0};
+        true -> { X/D, Y/D }
+    end.
+    
 
 multiplicaVector(Vec, Multiplica) ->
     {X,Y} = Vec,
