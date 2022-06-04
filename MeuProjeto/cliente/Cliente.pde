@@ -1,4 +1,4 @@
-// Need G4P library //<>// //<>// //<>// //<>// //<>// //<>// //<>// //<>// //<>// //<>//
+// Need G4P library //<>// //<>// //<>// //<>// //<>// //<>// //<>// //<>// //<>// //<>// //<>//
 import g4p_controls.*;
 import java.util.*;
 import java.lang.*;
@@ -734,7 +734,7 @@ public synchronized void updateJogo(String res) {
   
   {
    
-
+ //<>//
   //println("li isto " + res); //<>// //<>// //<>//
   StringTokenizer stk = new StringTokenizer(res, " ");
 

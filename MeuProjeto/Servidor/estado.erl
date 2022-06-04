@@ -1,5 +1,5 @@
 -module (estado).
--export ([start_state/0,atualizaMelhoresPontos/2]).
+-export ([start_state/0,atualizaMelhoresPontos/2, converterInt/1]).
 -import (criaturas, [novaCriatura/2,atualizaListaCriaturas/2,verificaColisoesCriaturaLista/2]).
 -import (jogadores, [novoJogador/1,acelerarFrente/1, viraDireita/1, viraEsquerda/1,atualizaJogadores/4,calculaVelocidadeMax/1 ]).   
 -import (timer, [send_after/3]).
@@ -269,13 +269,13 @@ updateTeclas(Estado,Coordenadas,Pid) ->
 
 updateTecla (JogadorAtual,Coordenadas) ->
     {J,{U,Pid}} = JogadorAtual,
-    [X2,Y2] = Coordenadas,
-    
-    
+    [XAUX,YAUX] = Coordenadas,
+    {X2,Y2} = normalizaVector({converterInt(XAUX),converterInt(YAUX)}),
+
     {E,Posicao, Direcao, Velocidade, Energia,Raio,  AceleracaoLinear, AceleracaoAngular, EnergiaMax, GastoEnergia, GanhoEnergia, Arrasto, RaioMax,RaioMin,Agilidade,Pontuacao} = J,
     
-    Radians = (Direcao * pi()) / 180,
-    VecDirecao = normalizaVector(multiplicaVector({cos(Radians), sin(Radians)}, Velocidade)),
+    {X,Y} = Posicao,
+    VecDirecao = normalizaVector({converterInt(X),converterInt(Y)}),
     {X1,Y1} = VecDirecao,
     
     if 
@@ -308,4 +308,14 @@ updateTecla (JogadorAtual,Coordenadas) ->
 
     
     [{NovoJogador,{U,Pid}}].
+
+
+
+
+converterInt (Numero) ->
+    %convert to int if its not int
+    if
+        integer(Numero) -> Numero;
+        true -> list_to_integer(Numero)
+    end.
 

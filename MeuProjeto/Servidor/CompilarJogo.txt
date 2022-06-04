@@ -1,9 +1,10 @@
 cd("C:/Users/Dimitri/Desktop/PC-2022/Programacao_Concorrente/MeuProjeto/Servidor").
+c(estado).
+
 c(server).
 c(jogadores).
 c(criaturas).
 c(auxiliar).
-c(estado).
 c(conversores).
 c(login_manager).
 server:start().
