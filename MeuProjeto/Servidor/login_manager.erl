@@ -44,7 +44,6 @@ maps_para_string([H|T]) -> mapa_para_string(H) ++ "." ++ "\n" ++  maps_para_stri
 
 
 loop(Map) ->
-    io:format("MAPA LOGINS~s~n",[maps:to_list(Map)]),
     receive
         {{create_account, Username, Pass}, From} ->
             case maps:find (Username,Map) of
