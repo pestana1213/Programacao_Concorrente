@@ -38,9 +38,6 @@ class Cristal {
     appc.translate(this.posX, this.posY);
     float Radians = (float)(this.dir * Math.PI) / 180;
     appc.rotate(Radians);
-    appc.triangle(this.tam/2 + 15, 0,
-           0, -this.tam/2,
-           0, this.tam/2);
     appc.popMatrix();
   }
 

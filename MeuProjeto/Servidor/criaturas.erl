@@ -99,6 +99,7 @@ verificaColisoesCriaturaLista( Jogador, Criaturas ) ->
 
 verificaColisaoCriatura( Jogador, Criatura ) ->
     % testar se o jogador tem raio minimo se sim pode dar return a true se colidiu
+    {Posicao, Direcao, Tamanho, Tipo, Velocidade} = Criatura,
     {_,JPosicao, _, _, _,JRaio, _, _, _, _, _, _, _,_, _,_}=Jogador,
     {CPosicao, _, CTamanho, _, _}=Criatura,
     D=distancia(JPosicao, CPosicao),
