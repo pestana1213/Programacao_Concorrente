@@ -37,6 +37,7 @@ calculaVelocidadeMax(Raio) ->
 %
 verificaColisaoObstaculos(Jogador, ListaObstaculos) ->
     {true,Posicao, Direcao, Velocidade, EnergiaAtual,Raio, AceleracaoLinear, AceleracaoAngular, EnergiaMax, GastoEnergia, GanhoEnergia, Arrasto, RaioMax,RaioMin, Agilidade,Pontuacao}=Jogador,
+    {PosX,PosY} = Posicao,
     [Obs1 | T] = ListaObstaculos,
     [Obs2 | Ta1] = T,
     [Obs3 | T4] = Ta1,
@@ -58,11 +59,20 @@ verificaColisaoObstaculos(Jogador, ListaObstaculos) ->
         
         T1 or T2 or T3 or T5 ->
             E = true,
-            DirecaoA = Direcao-180,
+            DirecaoA = Direcao,
             Radians = (DirecaoA * pi()) / 180,
-            VecDirecao = multiplicaVector({cos(Radians), sin(Radians)}, 20),
-            NPosicao= adicionaPares(Posicao, VecDirecao);
-    
+            if 
+                PosX >= 1299 -> 
+                    NPosicao=adicionaPares(Posicao,{-1299,0});
+                PosX =< 1 -> 
+                    NPosicao=adicionaPares(Posicao,{1299,0});
+                PosY >= 699 -> 
+                    NPosicao=adicionaPares(Posicao,{0,-700 });
+                true -> 
+                    NPosicao=adicionaPares(Posicao,{0,700})
+            end,
+            NPosicao;
+
         true ->
             E = true,
             NPosicao = Posicao,
