@@ -4,7 +4,7 @@
 -import (math, [sqrt/1, pow/2, cos/1, sin/1, pi/0]).
 
 %Player = {true,Posicao, Direcao, Velocidade, Energia,Raio, AceleracaoLinear, AceleracaoAngular, EnergiaMax, GastoEnergia, GanhoEnergia, Arrasto, RaioMax,RaioMin, Agilidade}
-novoJogador() ->
+novoJogador(ListaObstaculos) ->
 
     %constantes
     RaioMax = 220.0,
@@ -24,7 +24,7 @@ novoJogador() ->
     Direcao = 0.0,
     Agilidade = 1.0,
     Pontuacao = 0,
-    Posicao = posiciona(Raio),
+    Posicao = posiciona(Raio,ListaObstaculos),
     {true,Posicao, Direcao, Velocidade, EnergiaAtual,Raio, AceleracaoLinear, AceleracaoAngular, EnergiaMax, GastoEnergia, GanhoEnergia, Arrasto, RaioMax,RaioMin, Agilidade,Pontuacao}.
 
 
@@ -32,6 +32,54 @@ novoJogador() ->
 calculaVelocidadeMax(Raio) ->
     VelocidadeMax = 300/Raio,
     VelocidadeMax.
+
+
+%
+verificaColisaoObstaculos(Jogador, ListaObstaculos) ->
+    {true,Posicao, Direcao, Velocidade, EnergiaAtual,Raio, AceleracaoLinear, AceleracaoAngular, EnergiaMax, GastoEnergia, GanhoEnergia, Arrasto, RaioMax,RaioMin, Agilidade,Pontuacao}=Jogador,
+    {PosX,PosY} = Posicao,
+    [Obs1 | T] = ListaObstaculos,
+    [Obs2 | Ta1] = T,
+    [Obs3 | T4] = Ta1,
+    T1 = verificaColisaoObstaculo(Jogador,Obs1),
+    T2 = verificaColisaoObstaculo(Jogador,Obs2),
+    T3 = verificaColisaoObstaculo(Jogador,Obs3),
+    T5 = verificaColisaoLimiteMapa(Jogador),
+    %io:fwrite("RAIO MINIMO: ~p ~n", [RaioMin]),
+    %io:fwrite("RAIO: ~p ~n", [Raio]),
+    %io:fwrite("CONDICOES: ~p ~n", [T1 or T2 or T3 or T5]),
+    
+
+    if
+        (Raio =< RaioMin) and (T1 or T2 or T3 or T5)->
+            io:fwrite("Entrei ~n"),
+            E = false,
+            NPosicao = Posicao,
+            DirecaoA = Direcao;
+        
+        T1 or T2 or T3 or T5 ->
+            E = true,
+            DirecaoA = Direcao,
+            Radians = (DirecaoA * pi()) / 180,
+            if 
+                PosX >= 1299 -> 
+                    NPosicao=adicionaPares(Posicao,{-1299,0});
+                PosX =< 1 -> 
+                    NPosicao=adicionaPares(Posicao,{1299,0});
+                PosY >= 699 -> 
+                    NPosicao=adicionaPares(Posicao,{0,-700 });
+                true -> 
+                    NPosicao=adicionaPares(Posicao,{0,700})
+            end,
+            NPosicao;
+
+        true ->
+            E = true,
+            NPosicao = Posicao,
+            DirecaoA = Direcao
+    end,
+    {E,NPosicao, DirecaoA, Velocidade, EnergiaAtual,Raio, AceleracaoLinear, AceleracaoAngular, EnergiaMax, GastoEnergia, GanhoEnergia, Arrasto, RaioMax,RaioMin, Agilidade,Pontuacao}.
+
 
 
 verificaColisaoLimiteMapa (Jogador) ->
@@ -43,6 +91,16 @@ verificaColisaoLimiteMapa (Jogador) ->
         false
     end.
 
+
+
+verificaColisaoObstaculo( Jogador, Obstaculo ) ->
+    {ObsX, ObsY, Tamanho1} = Obstaculo,
+    {true,Posicao, _, _, _,Raio, _, _, _, _, _, _, _,_, _,_}=Jogador,
+    D=distancia(Posicao, {ObsX,ObsY}),
+    if
+        D < (Tamanho1/2 + Raio/2) -> true;
+        true -> false
+    end.
 
 %
 
@@ -125,12 +183,12 @@ movimentaJogador(Jogador) ->
     {E,NPosicao, Direcao, NVelocidade, NEnergia,NovoTamanho, AceleracaoLinear, AceleracaoAngular, EnergiaMax, GastoEnergia, GanhoEnergia, Arrasto, RaioMax,RaioMin, Nagilidade,Pontuacao}.
 
 
-    verificaColisaoJogadoresL(Jogador,[]) -> Jogador;
-    verificaColisaoJogadoresL(Jogador,[H | T]) -> verificaColisaoJogadoresL(verificaColisaoJogadores2(Jogador,H),T).
+    verificaColisaoJogadoresL(Jogador,[],ListaObstaculos) -> Jogador;
+    verificaColisaoJogadoresL(Jogador,[H | T],ListaObstaculos) -> verificaColisaoJogadoresL(verificaColisaoJogadores2(Jogador,H,ListaObstaculos),T,ListaObstaculos).
 
 
 
-    verificaColisaoJogadores2 (Jogador1, Jogador2) ->
+    verificaColisaoJogadores2 (Jogador1, Jogador2,ListaObstaculos) ->
         %io:format("Jogador1  ~p~n",[Jogador1]),
         {E1,NPosicao1, Direcao1, Velocidade1, Energia1, Tamanho1, AceleracaoLinear1, AceleracaoAngular1, EnergiaMax1, GastoEnergia1, GanhoEnergia1, Arrasto1, RaioMax1, RaioMin1, Agilidade1, Pontuacao1} = Jogador1,
         %io:format("Jogador2  ~p~n",[Jogador2]),
@@ -161,7 +219,7 @@ movimentaJogador(Jogador) ->
                     true ->
                         NAgilidade1 = Agilidade1 + 0.5
                 end,
-                {true,posiciona(NTamanho1), 0.0,  0.30, 20.0, NTamanho1, AceleracaoLinear1, AceleracaoAngular1, EnergiaMax1, GastoEnergia1, GanhoEnergia1, Arrasto1, RaioMax1, RaioMin1, NAgilidade1, 0};                              
+                {true,posiciona(NTamanho1,ListaObstaculos), 0.0,  0.30, 20.0, NTamanho1, AceleracaoLinear1, AceleracaoAngular1, EnergiaMax1, GastoEnergia1, GanhoEnergia1, Arrasto1, RaioMax1, RaioMin1, NAgilidade1, 0};                              
             Colidiu and (Tamanho2 < Tamanho1) ->          %o outro perdeu/resetou
                 if
                     (Tamanho1 + 20) > RaioMax1 ->
@@ -182,13 +240,13 @@ movimentaJogador(Jogador) ->
         
 
 
-atualizaJogadores (ListaJogadores,ListaColisaoVerde ,ListaColisaoVermelho) -> 
+atualizaJogadores (ListaJogadores,ListaColisaoVerde ,ListaColisaoVermelho, ListaObstaculos) -> 
     
     ListaJogadoresMexidos = [{movimentaJogador(Jogador),{U,P}} || {Jogador,{U,P}} <- ListaJogadores],
     
-    ListaJogadoesObjetos = [{Jogador,{U,P}} <- ListaJogadoresMexidos],
+    ListaJogadoesObjetos = [{verificaColisaoObstaculos(Jogador,ListaObstaculos),{U,P}} || {Jogador,{U,P}} <- ListaJogadoresMexidos],
     ListaJogadoesObjetosF = [J || {J,{_,_}} <- ListaJogadoesObjetos],
-    ListaJogadoresColisaoJogadores = [{verificaColisaoJogadoresL(Jogador,ListaJogadoesObjetosF--[Jogador]),{U,P}} || {Jogador,{U,P}} <- ListaJogadoesObjetos],
+    ListaJogadoresColisaoJogadores = [{verificaColisaoJogadoresL(Jogador,ListaJogadoesObjetosF--[Jogador],ListaObstaculos),{U,P}} || {Jogador,{U,P}} <- ListaJogadoesObjetos],
     LengthVerdes = length(ListaColisaoVerde),
     
     if 
