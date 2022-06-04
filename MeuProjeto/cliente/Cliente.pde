@@ -125,7 +125,7 @@ public void menu() {
 
    //ipLido = "192.168.1.69";
    ipLido = "localhost";
-   portaLida = "12347"; 
+   portaLida = "12343"; 
    boolean ok = con.connect(ipLido, Integer.parseInt(portaLida));  
 
   this.noLoop();

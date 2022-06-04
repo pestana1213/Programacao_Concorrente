@@ -277,25 +277,24 @@ updateTecla (JogadorAtual,Coordenadas) ->
     {X,Y} = Posicao,
     VecDirecao = normalizaVector({X,Y}),
     {X1,Y1} = VecDirecao,
-    
+    Declive = (converterInt(YAUX)-Y) / (converterInt(XAUX)-X),
+
+    io:fwrite("DIR: ~p ~n", [Direcao]),
     if 
         ((X1 == 0) or (Y1 == 0)) -> Cos = 0;
         true -> Cos = (X1*X2 + Y1*Y2) / (sqrt(X1*X1 + Y1*Y1) * sqrt(X2*X2 + Y2*Y2))
     end,
 
-    Angulo = acos(Cos) * 180 / pi(),
-    io:format("DIRECAO ~p~n", [Direcao]),
-    io:format("DIRECAO ~p~n", [VecDirecao]),
-    io:format("Angulo ~p~n", [Angulo]),
+    Angulo = acos(Cos),
 
     if
-        Angulo == 0 ->
+         ((Declive > -1) and (Declive<1) or (Declive == Direcao)) ->
             NovoJogador = acelerarFrente(J);
-        Angulo > 0 ->
-            
+        Declive > 1 -> 
             NovoJogador = viraDireita(J);
-        true ->
+        true -> 
             NovoJogador = viraEsquerda(J)
+
     end,
 
     %if

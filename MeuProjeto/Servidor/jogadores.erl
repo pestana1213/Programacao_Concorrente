@@ -1,5 +1,5 @@
 -module(jogadores).
--export([novoJogador/1,acelerarFrente/2, viraDireita/1, viraEsquerda/1 ,atualizaJogadores/4,calculaVelocidadeMax/1]).
+-export([novoJogador/1,acelerarFrente/1, viraDireita/1, viraEsquerda/1 ,atualizaJogadores/4,calculaVelocidadeMax/1]).
 -import(auxiliar, [multiplicaVector/2, normalizaVector/1, adicionaPares/2, distancia/2,posiciona/2]).
 -import (math, [sqrt/1, pow/2, cos/1, sin/1, pi/0]).
 
@@ -279,27 +279,29 @@ atualizaJogadores (ListaJogadores,ListaColisaoVerde ,ListaColisaoVermelho, Lista
 
 
 
-
-acelerarFrente(Jogador,Coordenadas) ->
+acelerarFrente(Jogador) ->
     {E,Posicao, Direcao, Velocidade, Energia,Raio, AceleracaoLinear, AceleracaoAngular, EnergiaMax, GastoEnergia, GanhoEnergia, Arrasto, RaioMax,RaioMin, Agilidade,Pontuacao} = Jogador,
-    
-
     VelocidadeMaxRaio = calculaVelocidadeMax(Raio),
-    
     if 
         E ->
-            NvelocidadeA = Velocidade + Agilidade/2 * AceleracaoLinear,
+            if
+                Energia >= GastoEnergia->                    
+                    NvelocidadeA = Velocidade + Agilidade/2 * AceleracaoLinear,
+                    NEnergia   = Energia - GastoEnergia,
 
-            if 
-            NvelocidadeA > VelocidadeMaxRaio ->
-                NVelocidade = VelocidadeMaxRaio;
-            true ->     
-                NVelocidade =  NvelocidadeA
+                    if 
+                    NvelocidadeA > VelocidadeMaxRaio ->
+                        NVelocidade = VelocidadeMaxRaio;
+                    true ->     
+                        NVelocidade =  NvelocidadeA
+                    end;
+
+                true ->
+                    NVelocidade = Velocidade,
+                    NEnergia   = Energia
+                
             end,
-
-            NVelocidade = Velocidade,
-
-            {true,Posicao, Direcao, NVelocidade, Energia,Raio,  AceleracaoLinear, AceleracaoAngular, EnergiaMax, GastoEnergia, GanhoEnergia, Arrasto, RaioMax,RaioMin,Agilidade,Pontuacao};
+            {true,Posicao, Direcao, NVelocidade, NEnergia,Raio,  AceleracaoLinear, AceleracaoAngular, EnergiaMax, GastoEnergia, GanhoEnergia, Arrasto, RaioMax,RaioMin,Agilidade,Pontuacao};
         true -> 
             Jogador
     end.
