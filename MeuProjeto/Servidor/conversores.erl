@@ -7,7 +7,7 @@ formataTecla( Data ) ->
 
 jogador_para_string(Jogador) ->
     {{_,{X,Y}, Direcao, _, EnergiaAtual,Raio, _, _, _, _, _, _, _,_, Agilidade,Pontuacao},U} = Jogador,
-    Lista = [U,integer_to_list(Pontuacao),integer_to_list(Pontuacao),float_to_list(X, [{decimals, 3}]), float_to_list(Y, [{decimals, 3}]), float_to_list(Raio, [{decimals, 3}]),float_to_list(Direcao, [{decimals, 3}]),  float_to_list(Agilidade, [{decimals, 3}])],
+    Lista = [U,integer_to_list(Pontuacao),integer_to_list(EnergiaAtual),float_to_list(X, [{decimals, 3}]), float_to_list(Y, [{decimals, 3}]), float_to_list(Raio, [{decimals, 3}]),float_to_list(Direcao, [{decimals, 3}]),  float_to_list(Agilidade, [{decimals, 3}])],
     string:join(Lista, " ").
 
 
@@ -41,7 +41,7 @@ formatarPontuacoes ([]) -> "";
 formatarPontuacoes ([{U,P}|T]) -> U ++ " " ++  integer_to_list(P) ++ " " ++ formatarPontuacoes(T) ++ "\n".
 
 formatState (Estado) ->
-    {ListaJogadores, ListaVerdes, ListaReds, ListaObstaculos, _} = Estado,
+    {ListaJogadores, ListaVerdes, ListaReds, ListaBlues, _} = Estado,
     Len1 = integer_to_list(length(ListaJogadores)) ++ " ",
     L1 = [{J,U} || {J, {U,_}} <- ListaJogadores ],
     R1 = jogadores_para_string(L1),
@@ -49,7 +49,7 @@ formatState (Estado) ->
     R2 = criaturas_para_string(ListaVerdes),
     Len3 = integer_to_list(length(ListaReds)) ++ " ",
     R3 = criaturas_para_string(ListaReds),
-    Len4 = integer_to_list(length(ListaObstaculos)) ++ " ",
-    R4 = obstaculos_para_string(ListaObstaculos),
+    Len4 = integer_to_list(length(ListaBlues)) ++ " ",
+    R4 = criaturas_para_string(ListaBlues),
     Resultado = "Estado " ++ Len1 ++ R1 ++ Len2 ++ R2 ++ Len3 ++ R3 ++ Len4 ++ R4 ++ "\n",
     Resultado.

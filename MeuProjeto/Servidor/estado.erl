@@ -15,14 +15,15 @@ start_state() ->
     Timer = spawn( fun() -> refresh(game) end),
     SpawnReds = spawn ( fun() -> adicionarVerdes(game) end),    
     SpawnVerdes = spawn ( fun() -> adicionarReds(game) end),   
+    SpawnAzuis= spawn ( fun() -> adicionarBlues(game) end),  
     register(statePid,spawn( fun() -> estado([], [])  end))
     .
 
 
 refresh (Pid) -> receive after 10 -> Pid ! {refresh, self()}, refresh(Pid) end.
-adicionarReds (Pid) -> receive after 5000 -> Pid ! {addReds, self()}, adicionarReds(Pid) end.
-adicionarVerdes (Pid) -> receive after 5000 -> Pid ! {addVerde, self()}, adicionarVerdes(Pid) end.
-
+adicionarReds (Pid) -> receive after 500 -> Pid ! {addReds, self()}, adicionarReds(Pid) end.
+adicionarVerdes (Pid) -> receive after 500 -> Pid ! {addVerde, self()}, adicionarVerdes(Pid) end.
+adicionarBlues (Pid) -> receive after 500 -> Pid ! {addBlue, self()}, adicionarBlues(Pid) end.
 
 estado(Atuais_Jogadores, Espera_Jogadores) ->
     io:format("Entrei no estado ~n"),
@@ -73,8 +74,7 @@ estado(Atuais_Jogadores, Espera_Jogadores) ->
 
 novoEstado() ->
     %player, green, red, obstaculos, screensize
-    ObstaculosLista = geraObstaculo([],3),
-    State = {[], [], [], ObstaculosLista, {1300,700}},
+    State = {[], [], [], [], {1300,700}},
     io:fwrite("Estado novo Gerado: ~p ~n", [State]),
     State.
 
@@ -208,6 +208,20 @@ gameManager(Estado, MelhoresPontuacoes)->
                 
             end;
 
+        {addBlue, _} ->
+            %io:format("Entrei no addReds~n"),
+            {ListaJogadores, ListaVerdes, ListaReds, ListaBlues, TamanhoEcra} = Estado,
+            if 
+                length(ListaBlues)<3 ->
+                    %io:format("Vou Adicionar uma criatura vermelha~n"),
+                    Creature = novaCriatura(r,ListaBlues),
+                    gameManager({ListaJogadores, ListaVerdes, ListaReds ,ListaBlues ++ [Creature], TamanhoEcra},MelhoresPontuacoes);
+                    
+                true ->
+                    gameManager({ListaJogadores, ListaVerdes, ListaReds,ListaBlues, TamanhoEcra},MelhoresPontuacoes)
+                
+            end;
+            
         {addVerde, _} ->
             %io:format("Entrei no addVerdes~n"),
             {ListaJogadores, ListaVerdes, ListaReds, ListaObstaculos, TamanhoEcra} = Estado,
@@ -224,18 +238,18 @@ gameManager(Estado, MelhoresPontuacoes)->
     end.
 
 update(Estado) ->
-    {ListaJogadores, ListaVerdes, ListaReds, ListaObstaculos, TamanhoEcra} = Estado,
+    {ListaJogadores, ListaVerdes, ListaReds, ListaBlues, TamanhoEcra} = Estado,
     %COLISOES
 
     ListaColisaoVerde = [verificaColisoesCriaturaLista(Jogador,ListaVerdes) || {Jogador,{_,_}} <- ListaJogadores],
     ListaColisaoVermelho = [verificaColisoesCriaturaLista(Jogador,ListaReds) || {Jogador,{_,_}} <- ListaJogadores],
-
+    ListaColisaoAzul = [verificaColisoesCriaturaLista(Jogador,ListaBlues) || {Jogador,{_,_}} <- ListaJogadores],
     
-    LV=atualizaListaCriaturas(ListaVerdes--lists:append(ListaColisaoVerde),ListaObstaculos),
-    LR=atualizaListaCriaturas(ListaReds--lists:append(ListaColisaoVermelho),ListaObstaculos),
-
+    LV=atualizaListaCriaturas(ListaVerdes--lists:append(ListaColisaoVerde),[]),
+    LR=atualizaListaCriaturas(ListaReds--lists:append(ListaColisaoVermelho),[]),
+    LB=atualizaListaCriaturas(ListaBlues--lists:append(ListaColisaoAzul),[]),
     
-    LJ=atualizaJogadores(ListaJogadores,ListaColisaoVerde ,ListaColisaoVermelho, ListaObstaculos),
+    LJ=atualizaJogadores(ListaJogadores,ListaColisaoVerde ,ListaColisaoVermelho, ListaColisaoAzul),
     %io:fwrite("Lista Nao Filtrada: ~p ~n", [LJ]),
     {Vencedores,Derrotados} = filtrar(LJ,{[],[]}),
     [P ! {line,"Perdeu\n"} || {_,P} <- Derrotados],
@@ -243,7 +257,7 @@ update(Estado) ->
     %io:fwrite("Vencedores: ~p ~n", [Vencedores]),
     %io:fwrite("Derrotados: ~p ~n", [Derrotados]),
     
-    {Vencedores, LV, LR, ListaObstaculos, TamanhoEcra}.
+    {Vencedores, LV, LR, LB, TamanhoEcra}.
 
 
 
@@ -267,34 +281,48 @@ updateTeclas(Estado,Coordenadas,Pid) ->
     ListaJogadorAtual = descobreJogador(ListaJogadores,Pid,Coordenadas),
     {ListaJogadorAtual, ListaVerdes, ListaReds, ListaObstaculos, TamanhoEcra}.
 
+
 updateTecla (JogadorAtual,Coordenadas) ->
     {J,{U,Pid}} = JogadorAtual,
     [XAUX,YAUX] = Coordenadas,
-    {X2,Y2} = normalizaVector({converterInt(XAUX),converterInt(YAUX)}),
 
     {E,Posicao, Direcao, Velocidade, Energia,Raio,  AceleracaoLinear, AceleracaoAngular, EnergiaMax, GastoEnergia, GanhoEnergia, Arrasto, RaioMax,RaioMin,Agilidade,Pontuacao} = J,
-    
-    {X,Y} = Posicao,
-    VecDirecao = normalizaVector({X,Y}),
-    {X1,Y1} = VecDirecao,
-    Declive = (converterInt(YAUX)-Y) / (converterInt(XAUX)-X),
 
-    io:fwrite("DIR: ~p ~n", [Direcao]),
+    {X,Y} = Posicao,
+    {X2,Y2} = normalizaVector({converterInt(XAUX)-X,converterInt(YAUX)-Y}),
+
+
+    Radians = (Direcao * pi()) / 180,
+    VecDirecao = normalizaVector({cos(Radians), sin(Radians)}),
+    {X1,Y1} = VecDirecao,
+    
     if 
-        ((X1 == 0) or (Y1 == 0)) -> Cos = 0;
+        ((X1 == 0) and (Y1 == 0)) -> Cos = 0;
         true -> Cos = (X1*X2 + Y1*Y2) / (sqrt(X1*X1 + Y1*Y1) * sqrt(X2*X2 + Y2*Y2))
     end,
 
-    Angulo = acos(Cos),
+    Angulo = acos(Cos) * 180 / pi(),
+    
+    if 
+        Y2 > 0 ->  Angulo2 = 360 - Angulo;
+        true -> Angulo2 = Angulo
+    end,
+  
+
+    %io:format("DIRECAO ~p~n", [Direcao]),
+    %io:format("DIRECAO ~p~n", [{X2,Y2}]),
+    %io:format("Angulo ~p~n", [Angulo2]),
+    
 
     if
-         ((Declive > -1) and (Declive<1) or (Declive == Direcao)) ->
-            NovoJogador = acelerarFrente(J);
-        Declive > 1 -> 
-            NovoJogador = viraDireita(J);
-        true -> 
-            NovoJogador = viraEsquerda(J)
-
+       ((Angulo2 < 30) or (Angulo2 > 330))  ->
+           NovoJogador2 = acelerarFrente(J);
+       ((Angulo2 > 180) and (Angulo2 < 360)) ->
+            NovoJogador = viraDireita(J),
+            NovoJogador2 = acelerarFrente(NovoJogador);
+       true ->
+            NovoJogador = viraEsquerda(J),
+            NovoJogador2 = acelerarFrente(NovoJogador)
     end,
 
     %if
@@ -306,9 +334,10 @@ updateTecla (JogadorAtual,Coordenadas) ->
     
 
     
-    [{NovoJogador,{U,Pid}}].
+    [{NovoJogador2,{U,Pid}}].
 
-
+    
+    
 
 
 converterInt (Numero) ->

@@ -1,6 +1,8 @@
 cd("C:/Users/Dimitri/Desktop/PC-2022/Programacao_Concorrente/MeuProjeto/Servidor").
-c(estado).
 
+
+cd("C:/Users/Dimitri/Desktop/Programacao_Concorrente-main/Programacao_Concorrente-main/MeuProjeto/Servidor").
+c(estado).
 c(server).
 c(jogadores).
 c(criaturas).
