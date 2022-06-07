@@ -182,6 +182,13 @@ public void menu() {
   opcoes_button.setText("Opções");
   opcoes_button.setLocalColorScheme(GCScheme.YELLOW_SCHEME);
   opcoes_button.addEventHandler(this, "opcoes_button_click");
+  
+  jogo_pontos_button = new GButton(this, 850, 60, 60, 60);
+  jogo_pontos_button.setIcon("Assets/ranking.png", 1, GAlign.SOUTH, GAlign.CENTER, GAlign.MIDDLE);
+  jogo_pontos_button.setLocalColorScheme(GCScheme.SCHEME_15);
+  jogo_pontos_button.addEventHandler(this, "jogo_pontos_button_click");
+  
+  
   this.loop();
 }
 
@@ -340,6 +347,7 @@ public void login() {
   password.setMaxWordLength(20);
   password.setOpaque(true);
   password.addEventHandler(this, "password_change");
+  
 
   registo_window.addOnCloseHandler(this, "close_login_window");
 
@@ -358,10 +366,6 @@ public void criaJogoWindow() {
 
   jogo_window.setActionOnClose(G4P.CLOSE_WINDOW);
   jogo_window.setVisible(false);
-  jogo_pontos_button = new GButton(jogo_window, 1260, 0, 40, 35);
-  jogo_pontos_button.setIcon("Assets/ranking.png", 1, GAlign.SOUTH, GAlign.CENTER, GAlign.MIDDLE);
-  jogo_pontos_button.setLocalColorScheme(GCScheme.SCHEME_15);
-  jogo_pontos_button.addEventHandler(this, "jogo_pontos_button_click");
   jogo_window.addDrawHandler(this, "drawJogo");
   jogo_window.addOnCloseHandler(this, "close_jogo");
   jogo_window.setVisible(false);

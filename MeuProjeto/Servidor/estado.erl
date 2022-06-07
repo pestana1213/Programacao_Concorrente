@@ -115,7 +115,7 @@ gameManager(Estado, MelhoresPontuacoes)->
         
         {pontos, From} ->
             Data = "Pontos" ++ " " ++ integer_to_list(length(maps:to_list(MelhoresPontuacoes))) ++ " " ++ formatarPontuacoes(maps:to_list(MelhoresPontuacoes)),
-            io:format("ENVIEI ESTES DADOS~p~n",[Data]),
+            %io:format("ENVIEI ESTES DADOS~p~n",[Data]),
             From ! {line,Data},
             %io:format("Pontuaçoes ~p~n",[formatarPontuacoes(maps:to_list(MelhoresPontuacoes))]), 
             gameManager(Estado,MelhoresPontuacoes);
