@@ -1,7 +1,7 @@
 -module (estado).
 -export ([start_state/0,atualizaMelhoresPontos/2, converterInt/1]).
 -import (criaturas, [novaCriatura/2,atualizaListaCriaturas/2,verificaColisoesCriaturaLista/2]).
--import (jogadores, [novoJogador/1,acelerarFrente/1, viraDireita/1, viraEsquerda/1,atualizaJogadores/4,calculaVelocidadeMax/1 ]).   
+-import (jogadores, [novoJogador/1,acelerarFrente/1, viraDireita/1, viraEsquerda/1,atualizaJogadores/4,calculaVelocidadeMax/1,vaiParaCoordenadas/3 ]).  
 -import (timer, [send_after/3]).
 -import (auxiliar, [multiplicaVector/2, geraObstaculo/2, normalizaVector/1]).
 -import (conversores, [formatState/1,formatarPontuacoes/1, formataTecla/1]).
@@ -123,13 +123,18 @@ gameManager(Estado, MelhoresPontuacoes)->
 
         {Coordenadas, Data, From} ->
             
-            
-            Coordenadas1 = formataTecla(Data),
 
-            Coordenadas2 = string:tokens(Coordenadas1, " "),
-            %io:format("X ~p~n", [X]),
+            Coordenadas1 = formataTecla(Data),
+            
+            if 
+                Coordenadas1 =:= "LEFT" ->
+                    NovoEstado = updateBoosts(Estado,From);
+                true ->
+                    Coordenadas2 = string:tokens(Coordenadas1, " "),
+                    NovoEstado = updateTeclas(Estado,Coordenadas2,From) 
+            
+            end,
             %io:format("Y ~p~n", [Y]),
-            NovoEstado = updateTeclas(Estado,Coordenadas2,From), 
             %io:format("Estado Antigo~p~n",[Estado]), 
             %io:format("Novo Estado~p~n",[NovoEstado]), 
             gameManager(NovoEstado,MelhoresPontuacoes);
@@ -307,37 +312,43 @@ updateTecla (JogadorAtual,Coordenadas) ->
         Y2 > 0 ->  Angulo2 = 360 - Angulo;
         true -> Angulo2 = Angulo
     end,
-  
 
-    %io:format("DIRECAO ~p~n", [Direcao]),
-    %io:format("DIRECAO ~p~n", [{X2,Y2}]),
-    %io:format("Angulo ~p~n", [Angulo2]),
-    
+    NovoJogador = vaiParaCoordenadas(J,converterInt(XAUX),converterInt(YAUX)),
 
-    if
-       ((Angulo2 < 30) or (Angulo2 > 330))  ->
-           NovoJogador2 = acelerarFrente(J);
-       ((Angulo2 > 180) and (Angulo2 < 360)) ->
-            NovoJogador = viraDireita(J),
-            NovoJogador2 = acelerarFrente(NovoJogador);
-       true ->
-            NovoJogador = viraEsquerda(J),
-            NovoJogador2 = acelerarFrente(NovoJogador)
-    end,
-
-    %if
-    %    Coordenadas == "w" -> NovoJogador = acelerarFrente(J);
-    %    Coordenadas == "a" -> NovoJogador = viraDireita(J);
-    %    Coordenadas == "d" -> NovoJogador = viraEsquerda(J);
-    %    true -> NovoJogador = J
-    %end,
-    
 
     
-    [{NovoJogador2,{U,Pid}}].
+    [{NovoJogador,{U,Pid}}].
 
     
     
+updateBoosts(Estado,Pid) ->
+    {ListaJogadores, ListaVerdes, ListaReds, ListaObstaculos, TamanhoEcra} = Estado,
+    ListaJogadorAtual = descobreJogadorBoost(ListaJogadores,Pid),
+    {ListaJogadorAtual, ListaVerdes, ListaReds, ListaObstaculos, TamanhoEcra}.
+
+
+descobreJogadorBoost([],Pid) -> [];
+descobreJogadorBoost([{J, {U,Pid}} | T],Pid) -> updateBoost({J, {U,Pid}})++T;
+descobreJogadorBoost([H | T],Pid) -> [H]++descobreJogadorBoost(T,Pid).
+
+
+updateBoost (JogadorAtual) ->
+    {J,{U,Pid}} = JogadorAtual,
+
+    {E,Posicao, Direcao, Velocidade, Energia,Raio,  AceleracaoLinear, AceleracaoAngular, EnergiaMax, GastoEnergia, GanhoEnergia, Arrasto, RaioMax,RaioMin,Boost,Pontuacao} = J,
+
+    if 
+        Raio >= (RaioMin+20) ->
+            NovoTamanho = Raio - 20,
+            NBoost = Boost + 0.25;
+        true ->
+            NovoTamanho = Raio,
+            NBoost = Boost
+    end,   
+
+    NovoJogador = {E,Posicao, Direcao, Velocidade, Energia,NovoTamanho,  AceleracaoLinear, AceleracaoAngular, EnergiaMax, GastoEnergia, GanhoEnergia, Arrasto, RaioMax,RaioMin,NBoost,Pontuacao},
+ 
+    [{NovoJogador,{U,Pid}}].
 
 
 converterInt (Numero) ->

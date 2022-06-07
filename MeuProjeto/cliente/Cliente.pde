@@ -67,6 +67,7 @@ GLabel agilidadeLabel;
 float agilidadeAtual;
 Font font = new Font("Arial", Font.PLAIN, 18);
 
+int contaCliques = 0;
 
 
 public void setup() {
@@ -104,7 +105,20 @@ public void fecha_ranking_window(GWindow window) {
 
 public void mouseMoved(PApplet applet, GWinData windata, MouseEvent ouseevent)  {
   con.write(ouseevent.getX() + " " + ouseevent.getY());
+   
+  if (ouseevent.getButton() == 37)
+  {
+    contaCliques ++;
+    if (contaCliques == 3)
+    {
+      con.write("LEFT");
+      contaCliques = 0;
+    }
+  }
 }
+
+
+
 
 void keyPressed_Handler(PApplet appc, GWinData data, KeyEvent event) {
   if (appc.keyPressed) {
@@ -702,6 +716,7 @@ public void porta_change(GTextField source, GEvent event) {
   println("Porta :" + porta.getText());
   portaLida = porta.getText();
 } 
+
 
 
 
