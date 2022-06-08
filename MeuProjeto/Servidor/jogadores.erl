@@ -391,9 +391,6 @@ viraEsquerda(Jogador) ->
 
 
 
-
-
-
 vaiParaCoordenadas(Jogador,X,Y) -> 
     {E,Posicao, Direcao, Velocidade, Energia,Raio, AceleracaoLinear, AceleracaoAngular, EnergiaMax, GastoEnergia, GanhoEnergia, Arrasto, RaioMax,RaioMin, Agilidade,Pontuacao} = Jogador,
     {X1,Y1} = Posicao,
@@ -425,7 +422,11 @@ vaiParaCoordenadas(Jogador,X,Y) ->
         Y2 > 0 ->  Angulo2 = 360 - Angulo;
         true -> Angulo2 = Angulo
     end,
+<<<<<<< HEAD
+    
+=======
  
+>>>>>>> 4698d0308d2f4e5a1983268203188d40d149e1ad
 
     Angulo2Rad =- ((Angulo2 * pi()) /180),
 
@@ -451,4 +452,4 @@ vaiParaCoordenadas(Jogador,X,Y) ->
             end;
         false -> 
             Jogador
-    end. 
+    end.
