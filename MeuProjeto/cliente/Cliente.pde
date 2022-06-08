@@ -161,7 +161,7 @@ public void menu() {
 
   titulo_label = new GLabel(this, 300, 80, 700, 60);
   titulo_label.setTextAlign(GAlign.CENTER, GAlign.TOP);
-  titulo_label.setText("Battle Royale");
+  titulo_label.setText("Drunk Battle Royale");
   titulo_label.setOpaque(false);
 
   login_button = new GButton(this, 500, 300, 300, 70);
