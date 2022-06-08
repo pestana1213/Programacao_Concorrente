@@ -1,7 +1,7 @@
 -module(jogadores).
 -export([novoJogador/1,acelerarFrente/1, viraDireita/1, viraEsquerda/1 ,atualizaJogadores/4,calculaVelocidadeMax/1, vaiParaCoordenadas/3]).
 -import(auxiliar, [multiplicaVector/2, normalizaVector/1, adicionaPares/2, distancia/2,posiciona/1]).
--import (math, [sqrt/1, pow/2, cos/1, sin/1, pi/0]).
+-import (math, [sqrt/1, pow/2, acos/1, cos/1, sin/1, pi/0]).
 
 %Player = {true,Posicao, Direcao, Velocidade, Energia,Raio, AceleracaoLinear, AceleracaoAngular, EnergiaMax, GastoEnergia, GanhoEnergia, Arrasto, RaioMax,RaioMin, Agilidade}
 novoJogador(ListaObstaculos) ->
@@ -406,23 +406,47 @@ vaiParaCoordenadas(Jogador,X,Y) ->
             NVelocidade =  NvelocidadeA
     end, 
 
+
+    {X2,Y2} = normalizaVector({ X-X1,Y-Y1}),
+
+
+    Radians = (Direcao * pi()) / 180,
+    VecDirecao = normalizaVector({cos(Radians), sin(Radians)}),
+    {X3,Y3} = VecDirecao,
+    
+    if 
+        ((X3 == 0) and (Y3 == 0)) -> Cos = 0;
+        true -> Cos = (X3*X2 + Y3*Y2) / (sqrt(X3*X3 + Y3*Y3) * sqrt(X2*X2 + Y2*Y2))
+    end,
+
+    Angulo = acos(Cos) * 180 / pi(),
+    
+    if 
+        Y2 > 0 ->  Angulo2 = 360 - Angulo;
+        true -> Angulo2 = Angulo
+    end,
+ 
+
+    Angulo2Rad =- ((Angulo2 * pi()) /180),
+
     case E of 
         true -> 
             if 
                 (( Y > Y1) and (X>X1)) -> 
                     NDirecao = Direcao + AceleracaoAngular * Agilidade/2 ,
-                    {true,Posicao, NDirecao, NVelocidade, Energia,Raio,  AceleracaoLinear, AceleracaoAngular, EnergiaMax, GastoEnergia, GanhoEnergia, Arrasto, RaioMax,RaioMin,Agilidade,Pontuacao};
+                    {true,Posicao, Angulo2Rad, NVelocidade, Energia,Raio,  AceleracaoLinear, AceleracaoAngular, EnergiaMax, GastoEnergia, GanhoEnergia, Arrasto, RaioMax,RaioMin,Agilidade,Pontuacao};
                 ((Y < Y1) and (X>X1)) ->
                         NDirecao = Direcao - AceleracaoAngular  * Agilidade/2,
-                    {true,Posicao, NDirecao, NVelocidade, Energia,Raio,  AceleracaoLinear, AceleracaoAngular, EnergiaMax, GastoEnergia, GanhoEnergia, Arrasto, RaioMax,RaioMin,Agilidade,Pontuacao};
+                    {true,Posicao, Angulo2Rad, NVelocidade, Energia,Raio,  AceleracaoLinear, AceleracaoAngular, EnergiaMax, GastoEnergia, GanhoEnergia, Arrasto, RaioMax,RaioMin,Agilidade,Pontuacao};
                 
                 (( Y > Y1) and (X<X1)) -> 
                     NDirecao = Direcao - AceleracaoAngular  * Agilidade/2,
-                    {true,Posicao, NDirecao, NVelocidade, Energia,Raio,  AceleracaoLinear, AceleracaoAngular, EnergiaMax, GastoEnergia, GanhoEnergia, Arrasto, RaioMax,RaioMin,Agilidade,Pontuacao};
+                    {true,Posicao, Angulo2Rad, NVelocidade, Energia,Raio,  AceleracaoLinear, AceleracaoAngular, EnergiaMax, GastoEnergia, GanhoEnergia, Arrasto, RaioMax,RaioMin,Agilidade,Pontuacao};
                 ((Y < Y1) and (X<X1)) ->
                         NDirecao = Direcao + AceleracaoAngular * Agilidade/2 ,
-                    {true,Posicao, NDirecao, NVelocidade, Energia,Raio,  AceleracaoLinear, AceleracaoAngular, EnergiaMax, GastoEnergia, GanhoEnergia, Arrasto, RaioMax,RaioMin,Agilidade,Pontuacao}
-                
+                    {true,Posicao, Angulo2Rad, NVelocidade, Energia,Raio,  AceleracaoLinear, AceleracaoAngular, EnergiaMax, GastoEnergia, GanhoEnergia, Arrasto, RaioMax,RaioMin,Agilidade,Pontuacao};
+                true -> 
+                    Jogador
                 
             end;
         false -> 
