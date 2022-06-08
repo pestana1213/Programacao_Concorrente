@@ -29,17 +29,25 @@ estado(Atuais_Jogadores, Espera_Jogadores) ->
     io:format("Entrei no estado ~n"),
     receive
         {ready, Username, UserProcess} -> 
-            io:format("len ~p ~n", [length (Atuais_Jogadores)]),   
+            io:format("len ~p ~n", [length (Espera_Jogadores)]),   
             if
-                length (Atuais_Jogadores) == 3 ->             
+                length (Espera_Jogadores) < 1 ->  
                     io:format("Recebi ready de ~p mas ele vai esperar ~n", [Username]),                                                     % Recebemos ready de um user mas o jogo está cheio, vai esperar
                     estado(Atuais_Jogadores, Espera_Jogadores ++ [{Username, UserProcess}]);      %Adicionamos lo entao aos jogadores em espera
                 true -> 
                     io:format("Recebi ready do User ~p e vou adicionar-lo ao jogo ~n",[Username]),
-                    UserProcess ! {comeca, game},
-                    game ! {geraJogador,{Username, UserProcess}},
-                    estado(Atuais_Jogadores ++ [{Username, UserProcess}], Espera_Jogadores)
+                    Espera_JogadoresAux = Espera_Jogadores ++ [{Username, UserProcess}],
+                    [JogadorPid ! {comeca, game} || {_,JogadorPid} <- Espera_JogadoresAux],
+                    [game ! {geraJogador,{Username,UserProcess}} || {Username,UserProcess} <- Espera_JogadoresAux],
+
+                    estado(Espera_JogadoresAux, [])
             end;
+
+        
+        {atualizaPontos, Username, UserProcess} ->
+            io:format("Recebi atualizaPontos de ~p ~n", [Username]),
+            game ! {atualizaPontos,Username},
+            estado(Atuais_Jogadores, Espera_Jogadores);
 
         {leave, Username, UserProcess}  -> % Recebemos leave de alguem vamos adicionar outro ao jogo                                              
             io:format("Recebi leave do User ~p ~n",[Username]),
@@ -100,7 +108,7 @@ atualizaMelhoresPontos(Map,[H|T]) ->
         error ->
             atualizaMelhoresPontos(maps:put(U, P, Map),T);
         {_,PontosA} when PontosA < P ->
-            atualizaMelhoresPontos(maps:put(U, P, Map),T);
+            atualizaMelhoresPontos(maps:put(U, PontosA+1, Map),T);
         _ ->
             atualizaMelhoresPontos(Map,T)
     end.
@@ -149,10 +157,19 @@ gameManager(Estado, MelhoresPontuacoes)->
             %EstadoM = formatState(NovoEstado),
             %io:format("Estado String~p~n",[EstadoM]),
             [ H ! {line,formatState(NovoEstado)} || H <- Pids],
-            JogadoresPontos = [{User,P} || {{_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,P}, {User, _}} <- ListaJogadores ],
+            %JogadoresPontos = [{User,P} || {{_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,P}, {User, _}} <- ListaJogadores ],
             %io:format("JogadoresPontos~p~n",[JogadoresPontos]),
             %io:format("Pontos melhores~p~n",[atualizaMelhoresPontos(MelhoresPontuacoes,JogadoresPontos)]), 
-            gameManager(NovoEstado,atualizaMelhoresPontos(MelhoresPontuacoes,JogadoresPontos));
+            gameManager(NovoEstado,MelhoresPontuacoes);
+
+        {atualizaPontos, From} ->
+            io:format("Vou atualizar pontos~n"),
+
+
+            MelhoresPontuacoesAux = atualizaMelhoresPontos(MelhoresPontuacoes, [{From,1}]),
+
+
+            gameManager(Estado,MelhoresPontuacoesAux);
 
         {leave, From} ->
             io:format("Alguem enviou leave~n"),
@@ -259,10 +276,21 @@ update(Estado) ->
     {Vencedores,Derrotados} = filtrar(LJ,{[],[]}),
     [P ! {line,"Perdeu\n"} || {_,P} <- Derrotados],
     [statePid ! {leave,U,P} || {U,P} <- Derrotados],
-    %io:fwrite("Vencedores: ~p ~n", [Vencedores]),
-    %io:fwrite("Derrotados: ~p ~n", [Derrotados]),
+
     
-    {Vencedores, LV, LR, LB, TamanhoEcra}.
+
+    if 
+        length (Vencedores) =:= 1 ->
+            io:fwrite("Nao houve vencedores~n"),
+            [P ! {line,"Venceu\n"} || {_,{_,P}} <- Vencedores],
+            [statePid ! {leave,U,P} || {_,{U,P}} <- Vencedores],
+            [statePid ! {atualizaPontos,U,P} || {_,{U,P}} <- Vencedores],
+            NovaLista = [];
+        true -> 
+            NovaLista = Vencedores
+    end,
+
+    {NovaLista, LV, LR, LB, TamanhoEcra}.
 
 
 

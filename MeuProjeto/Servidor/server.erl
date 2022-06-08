@@ -126,6 +126,9 @@ authenticator(Sock) ->
                             authenticator(Sock)
                     end;
 
+                "pontos" ->
+                    io:format("PONTOS ~n");
+
 
                 _ ->
                     gen_tcp:send(Sock,<<"Opção Inválida \n">>),

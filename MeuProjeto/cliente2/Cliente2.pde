@@ -1,4 +1,4 @@
-// Need G4P library //<>// //<>// //<>// //<>// //<>// //<>// //<>// //<>// //<>// //<>// //<>//
+// Need G4P library //<>// //<>// //<>// //<>// //<>// //<>// //<>// //<>// //<>// //<>// //<>// //<>//
 import g4p_controls.*;
 import java.util.*;
 import java.lang.*;
@@ -67,6 +67,7 @@ GLabel agilidadeLabel;
 float agilidadeAtual;
 Font font = new Font("Arial", Font.PLAIN, 18);
 
+int contaCliques = 0;
 
 
 public void setup() {
@@ -104,7 +105,20 @@ public void fecha_ranking_window(GWindow window) {
 
 public void mouseMoved(PApplet applet, GWinData windata, MouseEvent ouseevent)  {
   con.write(ouseevent.getX() + " " + ouseevent.getY());
+   
+  if (ouseevent.getButton() == 37)
+  {
+    contaCliques ++;
+    if (contaCliques == 3)
+    {
+      con.write("LEFT");
+      contaCliques = 0;
+    }
+  }
 }
+
+
+
 
 void keyPressed_Handler(PApplet appc, GWinData data, KeyEvent event) {
   if (appc.keyPressed) {
@@ -147,7 +161,7 @@ public void menu() {
 
   titulo_label = new GLabel(this, 300, 80, 700, 60);
   titulo_label.setTextAlign(GAlign.CENTER, GAlign.TOP);
-  titulo_label.setText("Battle Royale");
+  titulo_label.setText("Drunk Battle Royale");
   titulo_label.setOpaque(false);
 
   login_button = new GButton(this, 500, 300, 300, 70);
@@ -168,6 +182,13 @@ public void menu() {
   opcoes_button.setText("Opções");
   opcoes_button.setLocalColorScheme(GCScheme.YELLOW_SCHEME);
   opcoes_button.addEventHandler(this, "opcoes_button_click");
+  
+  jogo_pontos_button = new GButton(this, 850, 60, 60, 60);
+  jogo_pontos_button.setIcon("Assets/ranking.png", 1, GAlign.SOUTH, GAlign.CENTER, GAlign.MIDDLE);
+  jogo_pontos_button.setLocalColorScheme(GCScheme.SCHEME_15);
+  jogo_pontos_button.addEventHandler(this, "jogo_pontos_button_click");
+  
+  
   this.loop();
 }
 
@@ -326,6 +347,7 @@ public void login() {
   password.setMaxWordLength(20);
   password.setOpaque(true);
   password.addEventHandler(this, "password_change");
+  
 
   registo_window.addOnCloseHandler(this, "close_login_window");
 
@@ -344,10 +366,6 @@ public void criaJogoWindow() {
 
   jogo_window.setActionOnClose(G4P.CLOSE_WINDOW);
   jogo_window.setVisible(false);
-  jogo_pontos_button = new GButton(jogo_window, 1260, 0, 40, 35);
-  jogo_pontos_button.setIcon("Assets/ranking.png", 1, GAlign.SOUTH, GAlign.CENTER, GAlign.MIDDLE);
-  jogo_pontos_button.setLocalColorScheme(GCScheme.SCHEME_15);
-  jogo_pontos_button.addEventHandler(this, "jogo_pontos_button_click");
   jogo_window.addDrawHandler(this, "drawJogo");
   jogo_window.addOnCloseHandler(this, "close_jogo");
   jogo_window.setVisible(false);
@@ -431,7 +449,7 @@ public void concluir_login_button_click(GButton source, GEvent event) {
           //println("a\n");
           String estadoLido = con.read();
 
-          //println(estadoLido);
+          println(estadoLido);    
 
           if (estadoLido.equals("Perdeu") ) {
             perdeu_label = new GLabel(jogo_window, 0, 100, 1300, 400);
@@ -448,7 +466,22 @@ public void concluir_login_button_click(GButton source, GEvent event) {
              
 
             
-          } else {
+          } 
+          else if (estadoLido.equals("Venceu") ) {
+            perdeu_label = new GLabel(jogo_window, 0, 100, 1300, 400);
+            perdeu_label.setTextAlign(GAlign.CENTER, GAlign.MIDDLE);
+            perdeu_label.setFont(new Font("Arial", Font.PLAIN, 40));
+            perdeu_label.setText("");
+            perdeu_label.setOpaque(false);
+            scores.setText("");
+            raio.setText("");
+            agilidadeLabel.setText("");
+            perdeu_label.setText("VENCEU");
+            jogo_pontos_button.setVisible(false);
+            estadoJogo = false;
+            
+          }       
+          else {
             //conta++;
             //print("JOGO " + conta + "\n");
             if (!estadoLido.equals(""))
@@ -705,6 +738,7 @@ public void porta_change(GTextField source, GEvent event) {
 
 
 
+
 public void close_opcoes_window (GWindow window) { 
   getSurface().setVisible(true);
   registo_window.setVisible(false);
@@ -719,8 +753,8 @@ public void concluir_opcoes_button_click(GButton source, GEvent event) {
 
   boolean ok = con.connect(ipLido, Integer.parseInt(portaLida));  
   if (!ok) {
-    server_connection_label.appendText("Não me consegui conectar :(");
-  } else {
+    server_connection_label.appendText("Não me consegui conectar :("); //<>//
+  } else { //<>//
     server_connection_label.appendText("Conexão concluída com sucesso");
   }
   

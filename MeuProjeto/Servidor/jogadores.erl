@@ -51,12 +51,6 @@ verificaColisaoObstaculos(Jogador, ListaObstaculos) ->
     
 
     if
-        (Raio =< RaioMin) and (T5)->
-            io:fwrite("Entrei ~n"),
-            E = false,
-            NPosicao = Posicao,
-            DirecaoA = Direcao;
-        
         T5 ->
             E = true,
             DirecaoA = Direcao,
@@ -114,10 +108,10 @@ atualizaColisaoVerdes( Jogador, Criaturas ) ->
     {{E,Posicao, Direcao, Velocidade, EnergiaAtual,Raio, AceleracaoLinear, AceleracaoAngular, EnergiaMax, GastoEnergia, GanhoEnergia, Arrasto, RaioMax,RaioMin, Agilidade,Pontuacao},{U,P}} = Jogador,
     
     if 
-        Raio+((32.22222-0.1111111*Raio))*TamanhoLista > RaioMax ->
+        Raio+((20-0.05*Raio))*TamanhoLista > RaioMax ->
             NRaio = RaioMax;
         true ->
-            NRaio = Raio+((32.22222-0.1111111*Raio))*TamanhoLista
+            NRaio = Raio+((20-0.05*Raio))*TamanhoLista
     end,
 
     if 
@@ -136,10 +130,10 @@ atualizaColisaoVermelhos( Jogador, Criaturas ) ->
     {{E,Posicao, Direcao, Velocidade, EnergiaAtual,Raio, AceleracaoLinear, AceleracaoAngular, EnergiaMax, GastoEnergia, GanhoEnergia, Arrasto, RaioMax,RaioMin, Agilidade,Pontuacao},{U,P}} = Jogador,
 
     if 
-        Raio+((32.22222-0.1111111*Raio))*TamanhoLista > RaioMax ->
+        Raio+((20-0.05*Raio))*TamanhoLista > RaioMax ->
             NRaio = RaioMax;
         true ->
-            NRaio = Raio+((32.22222-0.1111111*Raio))*TamanhoLista
+            NRaio = Raio+((20-0.05*Raio))*TamanhoLista
     end,
 
     if 
@@ -157,10 +151,10 @@ atualizaColisaoAzuis( Jogador, Criaturas ) ->
     {{E,Posicao, Direcao, Velocidade, EnergiaAtual,Raio, AceleracaoLinear, AceleracaoAngular, EnergiaMax, GastoEnergia, GanhoEnergia, Arrasto, RaioMax,RaioMin, Agilidade,Pontuacao},{U,P}} = Jogador,
 
     if 
-        Raio+((32.22222-0.1111111*Raio))*TamanhoLista > RaioMax ->
+        Raio+((20-0.05*Raio))*TamanhoLista > RaioMax ->
             NRaio = RaioMax;
         true ->
-            NRaio = Raio+((32.22222-0.1111111*Raio))*TamanhoLista
+            NRaio = Raio+((20-0.05*Raio))*TamanhoLista
     end,
 
     if 
@@ -422,12 +416,6 @@ vaiParaCoordenadas(Jogador,X,Y) ->
         Y2 > 0 ->  Angulo2 = 360 - Angulo;
         true -> Angulo2 = Angulo
     end,
-<<<<<<< HEAD
-    
-=======
- 
->>>>>>> 4698d0308d2f4e5a1983268203188d40d149e1ad
-
     Angulo2Rad =- ((Angulo2 * pi()) /180),
 
     case E of 

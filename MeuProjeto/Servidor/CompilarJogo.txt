@@ -10,3 +10,22 @@ c(auxiliar).
 c(conversores).
 c(login_manager).
 server:start().
+
+
+
+
+
+
+
+
+
+
+                length(ListaJogadores) == 1->
+                    [H|T] = ListaJogadores,
+                    {_, {_, Pid1}} = H,
+                    if
+                        Pid1 == From ->
+                            gameManager(removeJogador(Estado,H),MelhoresPontuacoes);
+                        true ->
+                            gameManager(Estado,MelhoresPontuacoes)
+                    end;
