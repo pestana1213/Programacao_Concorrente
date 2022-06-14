@@ -449,7 +449,7 @@ public void concluir_login_button_click(GButton source, GEvent event) {
           //println("a\n");
           String estadoLido = con.read();
 
-          println(estadoLido);
+          //println(estadoLido);
 
           if (estadoLido.equals("Perdeu") ) {
             perdeu_label = new GLabel(jogo_window, 0, 100, 1300, 400);
@@ -461,10 +461,8 @@ public void concluir_login_button_click(GButton source, GEvent event) {
             raio.setText("");
             agilidadeLabel.setText("");
             perdeu_label.setText("PERDEU");
-            jogo_pontos_button.setVisible(false);
+            jogo_pontos_button.setVisible(true);
             estadoJogo = false;
-             
-
             
           } 
           else if (estadoLido.equals("Venceu") ) {
@@ -476,8 +474,10 @@ public void concluir_login_button_click(GButton source, GEvent event) {
             scores.setText("");
             raio.setText("");
             agilidadeLabel.setText("");
+            println("Cona");
             perdeu_label.setText("VENCEU");
-            jogo_pontos_button.setVisible(false);
+            jogo_pontos_button.setVisible(true);
+            println("Visivel");
             estadoJogo = false;
             
           }       
