@@ -12,7 +12,7 @@ start () ->
     Mapa = maps:from_list(L),
 
     register(login_manager, spawn( fun() -> login_manager:start_Login_Manager(Mapa) end)), % Login manager
-    Port = 12345,
+    Port = 22345,
     {ok, Socket} = gen_tcp:listen(Port, [binary, {packet, line}, {reuseaddr, true}]),    %Socket
     acceptor(Socket).
 

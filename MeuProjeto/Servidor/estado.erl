@@ -16,7 +16,12 @@ start_state() ->
     SpawnReds = spawn ( fun() -> adicionarVerdes(game) end),    
     SpawnVerdes = spawn ( fun() -> adicionarReds(game) end),   
     SpawnAzuis= spawn ( fun() -> adicionarBlues(game) end), 
+    
+    Flag = 0, 
+
     Salas = criaSalas(),
+    io:format("Salas ~n ~p", [Salas]),
+
     register(statePid,spawn( fun() -> lounge(Salas)  end))
     .
 
@@ -27,12 +32,14 @@ adicionarVerdes (Pid) -> receive after 500 -> Pid ! {addVerde, self()}, adiciona
 adicionarBlues (Pid) -> receive after 500 -> Pid ! {addBlue, self()}, adicionarBlues(Pid) end.
 
 novaSala() -> 
-    [{spawn(fun() -> criaSalas() end),[]}].
+
+    [{spawn(fun() -> estado([],[]) end),[]}].
 
 criaSalas() -> 
     novaSala() ++ novaSala() ++ novaSala() ++ novaSala(). 
 
 lounge(Salas) -> 
+
     receive 
         {ready,Username, UserProcess} -> 
 
