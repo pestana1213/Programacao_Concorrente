@@ -15,8 +15,9 @@ start_state() ->
     Timer = spawn( fun() -> refresh(game) end),
     SpawnReds = spawn ( fun() -> adicionarVerdes(game) end),    
     SpawnVerdes = spawn ( fun() -> adicionarReds(game) end),   
-    SpawnAzuis= spawn ( fun() -> adicionarBlues(game) end),  
-    register(statePid,spawn( fun() -> estado([], [])  end))
+    SpawnAzuis= spawn ( fun() -> adicionarBlues(game) end), 
+    Salas = criaSalas(),
+    register(statePid,spawn( fun() -> lounge(Salas)  end))
     .
 
 
@@ -25,8 +26,68 @@ adicionarReds (Pid) -> receive after 500 -> Pid ! {addReds, self()}, adicionarRe
 adicionarVerdes (Pid) -> receive after 500 -> Pid ! {addVerde, self()}, adicionarVerdes(Pid) end.
 adicionarBlues (Pid) -> receive after 500 -> Pid ! {addBlue, self()}, adicionarBlues(Pid) end.
 
+novaSala() -> 
+    [{spawn(fun() -> criaSalas() end),[]}].
+
+criaSalas() -> 
+    novaSala() ++ novaSala() ++ novaSala() ++ novaSala(). 
+
+lounge(Salas) -> 
+    receive 
+        {ready,Username, UserProcess} -> 
+
+            Sala = verificaSala(Salas), 
+            {Pid,ListaJogadores} = Sala,
+            NovasSalas = remove(Sala,Salas),
+            Pid ! {ready,Username,UserProcess},
+
+            NovoJogadores = ListaJogadores ++ [{Username,UserProcess}],
+            NovoSala = {Pid,NovoJogadores},
+
+            lounge([NovoSala | NovasSalas]);
+
+        {atualizaPontos, Username, UserProcess} ->
+
+            ondEstaJogador(Salas,UserProcess) ! {atualizaPontos,Username,UserProcess},
+            lounge(Salas);
+        {leave, Username, UserProcess}  ->                                            
+            ondEstaJogador(Salas,UserProcess) ! {leave,Username,UserProcess},
+            lounge(Salas)
+    end. 
+
+remove(X, L) ->
+    [Y || Y <- L, Y =/= X].
+
+
+ondEstaJogador([],UserProcess) -> []; 
+
+ondEstaJogador([{Pid,[X|Y]}|T],UserProcess) -> 
+    {User,Process} = X, 
+
+    if Process == UserProcess ->
+        Pid;
+    true -> 
+        if length(Y) == 0 -> 
+            ondEstaJogador([T],UserProcess);
+        true-> 
+            ondEstaJogador([{Pid,Y}|T],UserProcess)
+        end
+    end.
+
+
+verificaSala([H|T]) -> 
+    {Pid,ListaJogadores} = H, 
+
+    if length(ListaJogadores) < 8 -> 
+        H;
+    true -> 
+        verificaSala(T)
+    end.
+
+
 estado(Atuais_Jogadores, Espera_Jogadores) ->
     io:format("Entrei no estado ~n"),
+
     receive
         {ready, Username, UserProcess} -> 
             io:format("len ~p ~n", [length (Espera_Jogadores)]),   

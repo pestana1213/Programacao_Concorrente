@@ -139,7 +139,7 @@ public void menu() {
 
    //ipLido = "192.168.1.69";
    ipLido = "localhost";
-   portaLida = "12341"; 
+   portaLida = "12345"; 
    boolean ok = con.connect(ipLido, Integer.parseInt(portaLida));  
 
   this.noLoop();
