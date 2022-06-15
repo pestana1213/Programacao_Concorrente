@@ -4,14 +4,14 @@
 -import(auxiliar, [multiplicaVector/2, normalizaVector/1, meioVectores/2, adicionaPares/2, distancia/2,posiciona/1]).
 -import (math, [sqrt/1, pow/2, cos/1, sin/1, pi/0]).
 
-novaCriatura(Tipo,ListaObstaculos) ->
+novaCriatura(Tipo,ListaAzul) ->
     Direcao = float(rand:uniform(360)),
     Tamanho = 25,
     Velocidade = 5.0,
     Posicao = posiciona(25),
     {Posicao, Direcao, Tamanho, Tipo, Velocidade}.
 
-atualizaCriatura(Criatura, ListaObstaculos)->
+atualizaCriatura(Criatura, ListaAzul)->
     {Posicao, Direcao, Tamanho, Tipo, Velocidade}=Criatura,
     Radians = (Direcao * pi()) / 180,
     %VecDirecao = normalizaVector(multiplicaVector({cos(Radians), sin(Radians)}, Velocidade)),
@@ -49,16 +49,16 @@ atualizaCriatura(Criatura, ListaObstaculos)->
     %end,
 
     Nposs = {NovoX, NovoY},
-    verificaColisaoObstaculos({Nposs, Direcao, Tamanho, Tipo, Velocidade},ListaObstaculos).
+    verificaColisaoObstaculos({Nposs, Direcao, Tamanho, Tipo, Velocidade},ListaAzul).
 
-atualizaListaCriaturas(Criaturas, ListaObstaculos) ->
-    [atualizaCriatura(Criatura, ListaObstaculos) || Criatura <- Criaturas].
+atualizaListaCriaturas(Criaturas, ListaAzul) ->
+    [atualizaCriatura(Criatura, ListaAzul) || Criatura <- Criaturas].
 
 
 
-verificaColisaoObstaculos(Criatura, ListaObstaculos) ->
+verificaColisaoObstaculos(Criatura, ListaAzul) ->
     {PosicaoA, DirecaoX, Tamanho, Tipo, Velocidade}=Criatura,
-    %[Obs1 | T] = ListaObstaculos,
+    %[Obs1 | T] = ListaAzul,
     %[Obs2 | Ta1] = T,
     %[Obs3 | T4] = Ta1,
     %T1 = verificaColisaoObstaculo(Criatura,Obs1),
@@ -105,7 +105,7 @@ verificaColisoesCriaturaLista( Jogador, Criaturas ) ->
 verificaColisaoCriatura( Jogador, Criatura ) ->
     % testar se o jogador tem raio minimo se sim pode dar return a true se colidiu
     {Posicao, Direcao, Tamanho, Tipo, Velocidade} = Criatura,
-    {_,JPosicao, _, _, _,JRaio, _, _, _, _, _, _, _,_, _,_}=Jogador,
+    {_,JPosicao, _, _, _,JRaio, _, _, _, _, _, _,_}=Jogador,
     {CPosicao, _, CTamanho, _, _}=Criatura,
     D=distancia(JPosicao, CPosicao),
     if

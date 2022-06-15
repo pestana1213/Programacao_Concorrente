@@ -6,8 +6,8 @@ formataTecla( Data ) ->
     Key.
 
 jogador_para_string(Jogador) ->
-    {{_,{X,Y}, Direcao, _, EnergiaAtual,Raio, _, _, _, _, _, _, _,_, Agilidade,Pontuacao},U} = Jogador,
-    Lista = [U,integer_to_list(Pontuacao),integer_to_list(EnergiaAtual),float_to_list(X, [{decimals, 3}]), float_to_list(Y, [{decimals, 3}]), float_to_list(Raio, [{decimals, 3}]),float_to_list(Direcao, [{decimals, 3}]),  float_to_list(Agilidade, [{decimals, 3}])],
+    {{_,{X,Y}, Direcao, _, CorAtual,Raio, _, _, _, _, _, Agilidade,Pontuacao},U} = Jogador,
+    Lista = [U,integer_to_list(Pontuacao),integer_to_list(CorAtual),float_to_list(X, [{decimals, 3}]), float_to_list(Y, [{decimals, 3}]), float_to_list(Raio, [{decimals, 3}]),float_to_list(Direcao, [{decimals, 3}]),  float_to_list(Agilidade, [{decimals, 3}])],
     string:join(Lista, " ").
 
 

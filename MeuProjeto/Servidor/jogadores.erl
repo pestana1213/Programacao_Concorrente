@@ -3,29 +3,26 @@
 -import(auxiliar, [multiplicaVector/2, normalizaVector/1, adicionaPares/2, distancia/2,posiciona/1]).
 -import (math, [sqrt/1, pow/2, acos/1, cos/1, sin/1, pi/0]).
 
-%Player = {true,Posicao, Direcao, Velocidade, Energia,Raio, AceleracaoLinear, AceleracaoAngular, EnergiaMax, GastoEnergia, GanhoEnergia, Arrasto, RaioMax,RaioMin, Agilidade}
-novoJogador(ListaObstaculos) ->
+%Player = {true,Posicao, Direcao, Velocidade, Cor,Raio, AceleracaoLinear, AceleracaoAngular,    Arrasto, RaioMax,RaioMin, Agilidade}
+novoJogador(ListaAzul) ->
 
     %constantes
     RaioMax = 400.0,
     RaioMin = 20.0,
-    EnergiaMax = 20.0,
     Arrasto = 0.04,
     AceleracaoLinear = 0.35,
     AceleracaoAngular = 0.08,
-    GastoEnergia = 0.10,
-    GanhoEnergia= 0.03,
 
     %variaveis
     
-    EnergiaAtual = 0,
+    CorAtual = 0,
     Velocidade = 0.10,
     Raio=80.0,
     Direcao = 0.0,
     Agilidade = 1.0,
     Pontuacao = 0,
     Posicao = posiciona(Raio),
-    {true,Posicao, Direcao, Velocidade, EnergiaAtual,Raio, AceleracaoLinear, AceleracaoAngular, EnergiaMax, GastoEnergia, GanhoEnergia, Arrasto, RaioMax,RaioMin, Agilidade,Pontuacao}.
+    {true,Posicao, Direcao, Velocidade, CorAtual,Raio, AceleracaoLinear, AceleracaoAngular,    Arrasto, RaioMax,RaioMin, Agilidade,Pontuacao}.
 
 
 
@@ -35,10 +32,10 @@ calculaVelocidadeMax(Raio) ->
 
 
 %
-verificaColisaoObstaculos(Jogador, ListaObstaculos) ->
-    {true,Posicao, Direcao, Velocidade, EnergiaAtual,Raio, AceleracaoLinear, AceleracaoAngular, EnergiaMax, GastoEnergia, GanhoEnergia, Arrasto, RaioMax,RaioMin, Agilidade,Pontuacao}=Jogador,
+verificaColisaoObstaculos(Jogador, ListaAzul) ->
+    {true,Posicao, Direcao, Velocidade, CorAtual,Raio, AceleracaoLinear, AceleracaoAngular,    Arrasto, RaioMax,RaioMin, Agilidade,Pontuacao}=Jogador,
     {PosX,PosY} = Posicao,
-    %[Obs1 | T] = ListaObstaculos,
+    %[Obs1 | T] = ListaAzul,
     %[Obs2 | Ta1] = T,
     %[Obs3 | T4] = Ta1,
     %T1 = verificaColisaoObstaculo(Jogador,Obs1),
@@ -73,12 +70,12 @@ verificaColisaoObstaculos(Jogador, ListaObstaculos) ->
             DirecaoA = Direcao
     end,
 
-    {E,NPosicao, DirecaoA, Velocidade, EnergiaAtual,Raio, AceleracaoLinear, AceleracaoAngular, EnergiaMax, GastoEnergia, GanhoEnergia, Arrasto, RaioMax,RaioMin, Agilidade,Pontuacao}.
+    {E,NPosicao, DirecaoA, Velocidade, CorAtual,Raio, AceleracaoLinear, AceleracaoAngular,    Arrasto, RaioMax,RaioMin, Agilidade,Pontuacao}.
 
 
 
 verificaColisaoLimiteMapa (Jogador) ->
-    {_,Posicao, _, _, _,Raio, _, _, _, _, _, _, _,_, _,_}=Jogador,
+    {_,Posicao, _, _, _,Raio, _, _, _, _, _,  _,_}=Jogador,
     {PosX,PosY} = Posicao,
     if ((PosX + Raio/2) > 1300) or ((PosX - Raio/2) < 0) or ((PosY + Raio/2) > 700) or ((PosY - Raio/2) < 0) ->
         true;
@@ -105,7 +102,7 @@ verificaColisaoObstaculo( Jogador, Obstaculo ) ->
 
 atualizaColisaoVerdes( Jogador, Criaturas ) ->
     TamanhoLista = length(Criaturas),
-    {{E,Posicao, Direcao, Velocidade, EnergiaAtual,Raio, AceleracaoLinear, AceleracaoAngular, EnergiaMax, GastoEnergia, GanhoEnergia, Arrasto, RaioMax,RaioMin, Agilidade,Pontuacao},{U,P}} = Jogador,
+    {{E,Posicao, Direcao, Velocidade, CorAtual,Raio, AceleracaoLinear, AceleracaoAngular,    Arrasto, RaioMax,RaioMin, Agilidade,Pontuacao},{U,P}} = Jogador,
     
     if 
         Raio+((20-0.05*Raio))*TamanhoLista > RaioMax ->
@@ -116,18 +113,18 @@ atualizaColisaoVerdes( Jogador, Criaturas ) ->
 
     if 
         TamanhoLista /= 0 ->
-            NEnergiaAtual = 0;
+            NCorAtual = 0;
         true ->
-            NEnergiaAtual = EnergiaAtual
+            NCorAtual = CorAtual
     end,
 
-    {{E,Posicao, Direcao, Velocidade, NEnergiaAtual,NRaio, AceleracaoLinear, AceleracaoAngular, EnergiaMax, GastoEnergia, GanhoEnergia, Arrasto, RaioMax,RaioMin, Agilidade,Pontuacao},{U,P}} .
+    {{E,Posicao, Direcao, Velocidade, NCorAtual,NRaio, AceleracaoLinear, AceleracaoAngular,    Arrasto, RaioMax,RaioMin, Agilidade,Pontuacao},{U,P}} .
 
 
 
 atualizaColisaoVermelhos( Jogador, Criaturas ) ->
     TamanhoLista = length(Criaturas),
-    {{E,Posicao, Direcao, Velocidade, EnergiaAtual,Raio, AceleracaoLinear, AceleracaoAngular, EnergiaMax, GastoEnergia, GanhoEnergia, Arrasto, RaioMax,RaioMin, Agilidade,Pontuacao},{U,P}} = Jogador,
+    {{E,Posicao, Direcao, Velocidade, CorAtual,Raio, AceleracaoLinear, AceleracaoAngular,    Arrasto, RaioMax,RaioMin, Agilidade,Pontuacao},{U,P}} = Jogador,
 
     if 
         Raio+((20-0.05*Raio))*TamanhoLista > RaioMax ->
@@ -138,17 +135,17 @@ atualizaColisaoVermelhos( Jogador, Criaturas ) ->
 
     if 
         TamanhoLista /= 0 ->
-            NEnergiaAtual = 1;
+            NCorAtual = 1;
         true ->
-            NEnergiaAtual = EnergiaAtual
+            NCorAtual = CorAtual
     end,
 
-    {{E,Posicao, Direcao, Velocidade, NEnergiaAtual,Raio, AceleracaoLinear, AceleracaoAngular, EnergiaMax, GastoEnergia, GanhoEnergia, Arrasto, RaioMax,RaioMin, Agilidade,Pontuacao},{U,P}} .
+    {{E,Posicao, Direcao, Velocidade, NCorAtual,Raio, AceleracaoLinear, AceleracaoAngular,    Arrasto, RaioMax,RaioMin, Agilidade,Pontuacao},{U,P}} .
 
 
 atualizaColisaoAzuis( Jogador, Criaturas ) ->
     TamanhoLista = length(Criaturas),
-    {{E,Posicao, Direcao, Velocidade, EnergiaAtual,Raio, AceleracaoLinear, AceleracaoAngular, EnergiaMax, GastoEnergia, GanhoEnergia, Arrasto, RaioMax,RaioMin, Agilidade,Pontuacao},{U,P}} = Jogador,
+    {{E,Posicao, Direcao, Velocidade, CorAtual,Raio, AceleracaoLinear, AceleracaoAngular,    Arrasto, RaioMax,RaioMin, Agilidade,Pontuacao},{U,P}} = Jogador,
 
     if 
         Raio+((20-0.05*Raio))*TamanhoLista > RaioMax ->
@@ -159,18 +156,18 @@ atualizaColisaoAzuis( Jogador, Criaturas ) ->
 
     if 
         TamanhoLista /= 0 ->
-            NEnergiaAtual = 2;
+            NCorAtual = 2;
         true ->
-            NEnergiaAtual = EnergiaAtual
+            NCorAtual = CorAtual
     end,
 
-    {{E,Posicao, Direcao, Velocidade, NEnergiaAtual,NRaio, AceleracaoLinear, AceleracaoAngular, EnergiaMax, GastoEnergia, GanhoEnergia, Arrasto, RaioMax,RaioMin, Agilidade,Pontuacao},{U,P}} .
+    {{E,Posicao, Direcao, Velocidade, NCorAtual,NRaio, AceleracaoLinear, AceleracaoAngular,    Arrasto, RaioMax,RaioMin, Agilidade,Pontuacao},{U,P}} .
 
 
 
 movimentaJogador(Jogador) ->
 
-    {E,Posicao, Direcao, Velocidade, EnergiaAtual,NRaio, AceleracaoLinear, AceleracaoAngular, EnergiaMax, GastoEnergia, GanhoEnergia, Arrasto, RaioMax,RaioMin, Agilidade,Pontuacao} = Jogador,
+    {E,Posicao, Direcao, Velocidade, CorAtual,NRaio, AceleracaoLinear, AceleracaoAngular,    Arrasto, RaioMax,RaioMin, Agilidade,Pontuacao} = Jogador,
     
 
     if 
@@ -192,7 +189,7 @@ movimentaJogador(Jogador) ->
         true -> Nagilidade = NagilidadeA
     end,
 
-    {E,NPosicao, Direcao, NVelocidade, EnergiaAtual,NovoTamanho, AceleracaoLinear, AceleracaoAngular, EnergiaMax, GastoEnergia, GanhoEnergia, Arrasto, RaioMax,RaioMin, Nagilidade,Pontuacao}.
+    {E,NPosicao, Direcao, NVelocidade, CorAtual,NovoTamanho, AceleracaoLinear, AceleracaoAngular,    Arrasto, RaioMax,RaioMin, Nagilidade,Pontuacao}.
 
 
     verificaColisaoJogadoresL(Jogador,[]) -> Jogador;
@@ -239,9 +236,9 @@ movimentaJogador(Jogador) ->
         %VecDirecao = multiplicaVector({cos(Radians), sin(Radians)}, 20),
         %NPosicao= adicionaPares(Posicao, VecDirecao);
 
-        {E1,NPosicao1, Direcao1, Velocidade1, Cor1, Tamanho1, AceleracaoLinear1, AceleracaoAngular1, EnergiaMax1, GastoEnergia1, GanhoEnergia1, Arrasto1, RaioMax1, RaioMin1, Agilidade1, Pontuacao1} = Jogador1,
+        {E1,NPosicao1, Direcao1, Velocidade1, Cor1, Tamanho1, AceleracaoLinear1, AceleracaoAngular1, Arrasto1, RaioMax1, RaioMin1, Agilidade1, Pontuacao1} = Jogador1,
         %io:format("Jogador2  ~p~n",[Jogador2]),
-        {_,NPosicao2, _, _, Cor2, Tamanho2, _, _, _, _, _, _, _, _, _, _} = Jogador2,
+        {_,NPosicao2, _, _, Cor2, Tamanho2, _, _, _, _, _, _, _} = Jogador2,
         {PosX1,PosY1} = NPosicao1,
         {PosX2,PosY2} = NPosicao2,
         D=distancia(NPosicao1, NPosicao2),
@@ -256,7 +253,7 @@ movimentaJogador(Jogador) ->
         end,
         if
             Colidiu and not(Vitoria1) and (Tamanho1 =< RaioMin1) ->         %perdeu
-                {false,NPosicao1, Direcao1, Velocidade1, Cor1, Tamanho1, AceleracaoLinear1, AceleracaoAngular1, EnergiaMax1, GastoEnergia1, GanhoEnergia1, Arrasto1, RaioMax1, RaioMin1, Agilidade1, Pontuacao1};
+                {false,NPosicao1, Direcao1, Velocidade1, Cor1, Tamanho1, AceleracaoLinear1, AceleracaoAngular1,  Arrasto1, RaioMax1, RaioMin1, Agilidade1, Pontuacao1};
             
             Colidiu and not(Vitoria1) and (Tamanho1 > RaioMin1) ->          %reset
                 if
@@ -271,7 +268,7 @@ movimentaJogador(Jogador) ->
                 VecDirecao = multiplicaVector({cos(Radians), sin(Radians)}, 100),
                 NPosicao= adicionaPares(NPosicao1, VecDirecao),  
 
-                {true,NPosicao, DirecaoA,  Velocidade1, Cor1, NTamanho1, AceleracaoLinear1, AceleracaoAngular1, EnergiaMax1, GastoEnergia1, GanhoEnergia1, Arrasto1, RaioMax1, RaioMin1, Agilidade1, 0};                              
+                {true,NPosicao, DirecaoA,  Velocidade1, Cor1, NTamanho1, AceleracaoLinear1, AceleracaoAngular1, Arrasto1, RaioMax1, RaioMin1, Agilidade1, 0};                              
             
         
             Colidiu and Vitoria1  ->          %o outro perdeu/resetou
@@ -287,9 +284,9 @@ movimentaJogador(Jogador) ->
                 VecDirecao = multiplicaVector({cos(Radians), sin(Radians)}, 100),
                 NPosicao= adicionaPares(NPosicao1, VecDirecao),  
 
-                {true,NPosicao, DirecaoA,  Velocidade1, Cor1, NTamanho1, AceleracaoLinear1, AceleracaoAngular1, EnergiaMax1, GastoEnergia1, GanhoEnergia1, Arrasto1, RaioMax1, RaioMin1, Agilidade1, Pontuacao1+1};
+                {true,NPosicao, DirecaoA,  Velocidade1, Cor1, NTamanho1, AceleracaoLinear1, AceleracaoAngular1,  Arrasto1, RaioMax1, RaioMin1, Agilidade1, Pontuacao1+1};
             true -> 
-                {E1,NPosicao1, Direcao1, Velocidade1, Cor1, Tamanho1, AceleracaoLinear1, AceleracaoAngular1, EnergiaMax1, GastoEnergia1, GanhoEnergia1, Arrasto1, RaioMax1, RaioMin1, Agilidade1, Pontuacao1}
+                {E1,NPosicao1, Direcao1, Velocidade1, Cor1, Tamanho1, AceleracaoLinear1, AceleracaoAngular1,  Arrasto1, RaioMax1, RaioMin1, Agilidade1, Pontuacao1}
         end.
         
 
@@ -343,7 +340,7 @@ atualizaJogadores (ListaJogadores,ListaColisaoVerde ,ListaColisaoVermelho, Lista
 
 
 acelerarFrente(Jogador) ->
-    {E,Posicao, Direcao, Velocidade, Energia,Raio, AceleracaoLinear, AceleracaoAngular, EnergiaMax, GastoEnergia, GanhoEnergia, Arrasto, RaioMax,RaioMin, Agilidade,Pontuacao} = Jogador,
+    {E,Posicao, Direcao, Velocidade, Cor,Raio, AceleracaoLinear, AceleracaoAngular,    Arrasto, RaioMax,RaioMin, Agilidade,Pontuacao} = Jogador,
     VelocidadeMaxRaio = calculaVelocidadeMax(Raio),
     if 
         E ->
@@ -356,28 +353,28 @@ acelerarFrente(Jogador) ->
                     NVelocidade =  NvelocidadeA
             end,
             
-            {true,Posicao, Direcao, NVelocidade, Energia,Raio,  AceleracaoLinear, AceleracaoAngular, EnergiaMax, GastoEnergia, GanhoEnergia, Arrasto, RaioMax,RaioMin,Agilidade,Pontuacao};
+            {true,Posicao, Direcao, NVelocidade, Cor,Raio,  AceleracaoLinear, AceleracaoAngular,    Arrasto, RaioMax,RaioMin,Agilidade,Pontuacao};
         true -> 
             Jogador
     end.
 
 
 viraDireita(Jogador) ->
-    {E,Posicao, Direcao, Velocidade, Energia,Raio,  AceleracaoLinear, AceleracaoAngular, EnergiaMax, GastoEnergia, GanhoEnergia, Arrasto, RaioMax,RaioMin,Agilidade,Pontuacao} = Jogador,
+    {E,Posicao, Direcao, Velocidade, Cor,Raio,  AceleracaoLinear, AceleracaoAngular,    Arrasto, RaioMax,RaioMin,Agilidade,Pontuacao} = Jogador,
     case E of
         true ->
             NDirecao = Direcao + AceleracaoAngular * Agilidade/2 ,
-            {true,Posicao, NDirecao, Velocidade, Energia,Raio,  AceleracaoLinear, AceleracaoAngular, EnergiaMax, GastoEnergia, GanhoEnergia, Arrasto, RaioMax,RaioMin,Agilidade,Pontuacao};
+            {true,Posicao, NDirecao, Velocidade, Cor,Raio,  AceleracaoLinear, AceleracaoAngular,    Arrasto, RaioMax,RaioMin,Agilidade,Pontuacao};
         false -> 
             Jogador
     end.
 
 viraEsquerda(Jogador) ->
-    {E,Posicao, Direcao, Velocidade, Energia,Raio,  AceleracaoLinear, AceleracaoAngular, EnergiaMax, GastoEnergia, GanhoEnergia, Arrasto, RaioMax,RaioMin,Agilidade,Pontuacao}= Jogador,
+    {E,Posicao, Direcao, Velocidade, Cor,Raio,  AceleracaoLinear, AceleracaoAngular,    Arrasto, RaioMax,RaioMin,Agilidade,Pontuacao}= Jogador,
     case E of
         true ->
             NDirecao = Direcao - AceleracaoAngular  * Agilidade/2,
-            {true,Posicao, NDirecao, Velocidade, Energia,Raio,  AceleracaoLinear, AceleracaoAngular, EnergiaMax, GastoEnergia, GanhoEnergia, Arrasto, RaioMax,RaioMin,Agilidade,Pontuacao};
+            {true,Posicao, NDirecao, Velocidade, Cor,Raio,  AceleracaoLinear, AceleracaoAngular,    Arrasto, RaioMax,RaioMin,Agilidade,Pontuacao};
         false->
             Jogador
         end.
@@ -386,7 +383,7 @@ viraEsquerda(Jogador) ->
 
 
 vaiParaCoordenadas(Jogador,X,Y) -> 
-    {E,Posicao, Direcao, Velocidade, Energia,Raio, AceleracaoLinear, AceleracaoAngular, EnergiaMax, GastoEnergia, GanhoEnergia, Arrasto, RaioMax,RaioMin, Agilidade,Pontuacao} = Jogador,
+    {E,Posicao, Direcao, Velocidade, Cor,Raio, AceleracaoLinear, AceleracaoAngular,    Arrasto, RaioMax,RaioMin, Agilidade,Pontuacao} = Jogador,
     {X1,Y1} = Posicao,
     VelocidadeMaxRaio = calculaVelocidadeMax(Raio),
     NvelocidadeA = Velocidade + Agilidade/2 * AceleracaoLinear,
@@ -423,17 +420,17 @@ vaiParaCoordenadas(Jogador,X,Y) ->
             if 
                 (( Y > Y1) and (X>X1)) -> 
                     NDirecao = Direcao + AceleracaoAngular * Agilidade/2 ,
-                    {true,Posicao, Angulo2Rad, NVelocidade, Energia,Raio,  AceleracaoLinear, AceleracaoAngular, EnergiaMax, GastoEnergia, GanhoEnergia, Arrasto, RaioMax,RaioMin,Agilidade,Pontuacao};
+                    {true,Posicao, Angulo2Rad, NVelocidade, Cor,Raio,  AceleracaoLinear, AceleracaoAngular,    Arrasto, RaioMax,RaioMin,Agilidade,Pontuacao};
                 ((Y < Y1) and (X>X1)) ->
                         NDirecao = Direcao - AceleracaoAngular  * Agilidade/2,
-                    {true,Posicao, Angulo2Rad, NVelocidade, Energia,Raio,  AceleracaoLinear, AceleracaoAngular, EnergiaMax, GastoEnergia, GanhoEnergia, Arrasto, RaioMax,RaioMin,Agilidade,Pontuacao};
+                    {true,Posicao, Angulo2Rad, NVelocidade, Cor,Raio,  AceleracaoLinear, AceleracaoAngular,    Arrasto, RaioMax,RaioMin,Agilidade,Pontuacao};
                 
                 (( Y > Y1) and (X<X1)) -> 
                     NDirecao = Direcao - AceleracaoAngular  * Agilidade/2,
-                    {true,Posicao, Angulo2Rad, NVelocidade, Energia,Raio,  AceleracaoLinear, AceleracaoAngular, EnergiaMax, GastoEnergia, GanhoEnergia, Arrasto, RaioMax,RaioMin,Agilidade,Pontuacao};
+                    {true,Posicao, Angulo2Rad, NVelocidade, Cor,Raio,  AceleracaoLinear, AceleracaoAngular,    Arrasto, RaioMax,RaioMin,Agilidade,Pontuacao};
                 ((Y < Y1) and (X<X1)) ->
                         NDirecao = Direcao + AceleracaoAngular * Agilidade/2 ,
-                    {true,Posicao, Angulo2Rad, NVelocidade, Energia,Raio,  AceleracaoLinear, AceleracaoAngular, EnergiaMax, GastoEnergia, GanhoEnergia, Arrasto, RaioMax,RaioMin,Agilidade,Pontuacao};
+                    {true,Posicao, Angulo2Rad, NVelocidade, Cor,Raio,  AceleracaoLinear, AceleracaoAngular,    Arrasto, RaioMax,RaioMin,Agilidade,Pontuacao};
                 true -> 
                     Jogador
                 

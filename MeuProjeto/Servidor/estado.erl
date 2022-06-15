@@ -16,12 +16,8 @@ start_state() ->
     SpawnReds = spawn ( fun() -> adicionarVerdes(game) end),    
     SpawnVerdes = spawn ( fun() -> adicionarReds(game) end),   
     SpawnAzuis= spawn ( fun() -> adicionarBlues(game) end), 
-    
-    Flag = 0, 
-
     Salas = criaSalas(),
-    io:format("Salas ~n ~p", [Salas]),
-
+    %io:format("Salas ~n ~p", [Salas]),
     register(statePid,spawn( fun() -> lounge(Salas)  end))
     .
 
@@ -155,14 +151,14 @@ novoEstado() ->
     State.
 
 adicionaJogador(Estado,Jogador) ->
-    {ListaJogadores, ListaVerdes, ListaReds, ListaObstaculos, TamanhoEcra} = Estado,
-    State = { ListaJogadores ++ [{novoJogador(ListaObstaculos), Jogador}], ListaVerdes, ListaReds, ListaObstaculos, TamanhoEcra},
+    {ListaJogadores, ListaVerdes, ListaReds, ListaAzul, TamanhoEcra} = Estado,
+    State = { ListaJogadores ++ [{novoJogador(ListaAzul), Jogador}], ListaVerdes, ListaReds, ListaAzul, TamanhoEcra},
     io:fwrite("Estado: ~p ~n", [State]),
     State.
 
 removeJogador(Estado,Jogador) ->
-    {ListaJogadores, ListaVerdes, ListaReds, ListaObstaculos, TamanhoEcra} = Estado,
-    State = { ListaJogadores -- [Jogador], ListaVerdes, ListaReds, ListaObstaculos, TamanhoEcra},
+    {ListaJogadores, ListaVerdes, ListaReds, ListaAzul, TamanhoEcra} = Estado,
+    State = { ListaJogadores -- [Jogador], ListaVerdes, ListaReds, ListaAzul, TamanhoEcra},
     io:fwrite("Estado com jogador removido: ~p ~n", [State]),
     State.
 
@@ -241,7 +237,7 @@ gameManager(Estado, MelhoresPontuacoes)->
 
         {leave, From} ->
             io:format("Alguem enviou leave~n"),
-            {ListaJogadores, ListaVerdes, ListaReds, ListaObstaculos, TamanhoEcra} = Estado,
+            {ListaJogadores, ListaVerdes, ListaReds, ListaAzul, TamanhoEcra} = Estado,
             if
                 length(ListaJogadores) == 1->
                     [H|T] = ListaJogadores,
@@ -286,15 +282,15 @@ gameManager(Estado, MelhoresPontuacoes)->
 
         {addReds, _} ->
             %io:format("Entrei no addReds~n"),
-            {ListaJogadores, ListaVerdes, ListaReds, ListaObstaculos, TamanhoEcra} = Estado,
+            {ListaJogadores, ListaVerdes, ListaReds, ListaAzul, TamanhoEcra} = Estado,
             if 
                 length(ListaReds)<3 ->
                     %io:format("Vou Adicionar uma criatura vermelha~n"),
-                    Creature = novaCriatura(r,ListaObstaculos),
-                    gameManager({ListaJogadores, ListaVerdes, ListaReds ++ [Creature],ListaObstaculos, TamanhoEcra},MelhoresPontuacoes);
+                    Creature = novaCriatura(r,ListaAzul),
+                    gameManager({ListaJogadores, ListaVerdes, ListaReds ++ [Creature],ListaAzul, TamanhoEcra},MelhoresPontuacoes);
                     
                 true ->
-                    gameManager({ListaJogadores, ListaVerdes, ListaReds,ListaObstaculos, TamanhoEcra},MelhoresPontuacoes)
+                    gameManager({ListaJogadores, ListaVerdes, ListaReds,ListaAzul, TamanhoEcra},MelhoresPontuacoes)
                 
             end;
 
@@ -314,15 +310,15 @@ gameManager(Estado, MelhoresPontuacoes)->
             
         {addVerde, _} ->
             %io:format("Entrei no addVerdes~n"),
-            {ListaJogadores, ListaVerdes, ListaReds, ListaObstaculos, TamanhoEcra} = Estado,
+            {ListaJogadores, ListaVerdes, ListaReds, ListaAzul, TamanhoEcra} = Estado,
             if 
                 length(ListaVerdes)<3 ->
                     %io:format("Vou Adicionar uma criatura Verde~n"),
-                    Creature = novaCriatura(v,ListaObstaculos),
-                    gameManager({ListaJogadores, ListaVerdes ++ [Creature], ListaReds ,ListaObstaculos, TamanhoEcra},MelhoresPontuacoes);
+                    Creature = novaCriatura(v,ListaAzul),
+                    gameManager({ListaJogadores, ListaVerdes ++ [Creature], ListaReds ,ListaAzul, TamanhoEcra},MelhoresPontuacoes);
                     
                 true ->
-                    gameManager({ListaJogadores, ListaVerdes, ListaReds ,ListaObstaculos, TamanhoEcra},MelhoresPontuacoes)
+                    gameManager({ListaJogadores, ListaVerdes, ListaReds ,ListaAzul, TamanhoEcra},MelhoresPontuacoes)
             end
 
     end.
@@ -365,8 +361,8 @@ update(Estado) ->
 
 
 filtrar([],X) -> X;
-filtrar([{{true,Posicao, Direcao, Velocidade, EnergiaAtual,Raio, AceleracaoLinear, AceleracaoAngular, EnergiaMax, GastoEnergia, GanhoEnergia, Arrasto, RaioMax,RaioMin, Agilidade,Pontuacao},{U,P}}|T],{V,D}) -> 
-    filtrar(T,{V++[{{true,Posicao, Direcao, Velocidade, EnergiaAtual,Raio, AceleracaoLinear, AceleracaoAngular, EnergiaMax, GastoEnergia, GanhoEnergia, Arrasto, RaioMax,RaioMin, Agilidade,Pontuacao},{U,P}}],D});
+filtrar([{{true,Posicao, Direcao, Velocidade, CorAtual,Raio, AceleracaoLinear, AceleracaoAngular,    Arrasto, RaioMax,RaioMin, Agilidade,Pontuacao},{U,P}}|T],{V,D}) -> 
+    filtrar(T,{V++[{{true,Posicao, Direcao, Velocidade, CorAtual,Raio, AceleracaoLinear, AceleracaoAngular,    Arrasto, RaioMax,RaioMin, Agilidade,Pontuacao},{U,P}}],D});
 filtrar([{_,{U,P}}|T],{V,D}) -> filtrar(T,{V,D++[{U,P}]}).
 
 
@@ -378,16 +374,16 @@ descobreJogador([{J, {U,Pid}} | T],Pid,Coordenadas) -> updateTecla({J, {U,Pid}},
 descobreJogador([H | T],Pid,Coordenadas) -> [H]++descobreJogador(T,Pid,Coordenadas).
 
 updateTeclas(Estado,Coordenadas,Pid) ->
-    {ListaJogadores, ListaVerdes, ListaReds, ListaObstaculos, TamanhoEcra} = Estado,
+    {ListaJogadores, ListaVerdes, ListaReds, ListaAzul, TamanhoEcra} = Estado,
     ListaJogadorAtual = descobreJogador(ListaJogadores,Pid,Coordenadas),
-    {ListaJogadorAtual, ListaVerdes, ListaReds, ListaObstaculos, TamanhoEcra}.
+    {ListaJogadorAtual, ListaVerdes, ListaReds, ListaAzul, TamanhoEcra}.
 
 
 updateTecla (JogadorAtual,Coordenadas) ->
     {J,{U,Pid}} = JogadorAtual,
     [XAUX,YAUX] = Coordenadas,
 
-    {E,Posicao, Direcao, Velocidade, Energia,Raio,  AceleracaoLinear, AceleracaoAngular, EnergiaMax, GastoEnergia, GanhoEnergia, Arrasto, RaioMax,RaioMin,Agilidade,Pontuacao} = J,
+    {E,Posicao, Direcao, Velocidade, Cor,Raio,  AceleracaoLinear, AceleracaoAngular,    Arrasto, RaioMax,RaioMin,Agilidade,Pontuacao} = J,
 
     {X,Y} = Posicao,
     {X2,Y2} = normalizaVector({converterInt(XAUX)-X,converterInt(YAUX)-Y}),
@@ -418,9 +414,9 @@ updateTecla (JogadorAtual,Coordenadas) ->
     
     
 updateBoosts(Estado,Pid) ->
-    {ListaJogadores, ListaVerdes, ListaReds, ListaObstaculos, TamanhoEcra} = Estado,
+    {ListaJogadores, ListaVerdes, ListaReds, ListaAzul, TamanhoEcra} = Estado,
     ListaJogadorAtual = descobreJogadorBoost(ListaJogadores,Pid),
-    {ListaJogadorAtual, ListaVerdes, ListaReds, ListaObstaculos, TamanhoEcra}.
+    {ListaJogadorAtual, ListaVerdes, ListaReds, ListaAzul, TamanhoEcra}.
 
 
 descobreJogadorBoost([],Pid) -> [];
@@ -431,7 +427,7 @@ descobreJogadorBoost([H | T],Pid) -> [H]++descobreJogadorBoost(T,Pid).
 updateBoost (JogadorAtual) ->
     {J,{U,Pid}} = JogadorAtual,
 
-    {E,Posicao, Direcao, Velocidade, Energia,Raio,  AceleracaoLinear, AceleracaoAngular, EnergiaMax, GastoEnergia, GanhoEnergia, Arrasto, RaioMax,RaioMin,Boost,Pontuacao} = J,
+    {E,Posicao, Direcao, Velocidade, Cor,Raio,  AceleracaoLinear, AceleracaoAngular,    Arrasto, RaioMax,RaioMin,Boost,Pontuacao} = J,
 
     if 
         Raio >= (RaioMin+20) ->
@@ -442,7 +438,7 @@ updateBoost (JogadorAtual) ->
             NBoost = Boost
     end,   
 
-    NovoJogador = {E,Posicao, Direcao, Velocidade, Energia,NovoTamanho,  AceleracaoLinear, AceleracaoAngular, EnergiaMax, GastoEnergia, GanhoEnergia, Arrasto, RaioMax,RaioMin,NBoost,Pontuacao},
+    NovoJogador = {E,Posicao, Direcao, Velocidade, Cor,NovoTamanho,  AceleracaoLinear, AceleracaoAngular,    Arrasto, RaioMax,RaioMin,NBoost,Pontuacao},
  
     [{NovoJogador,{U,Pid}}].
 
