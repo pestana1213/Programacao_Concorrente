@@ -161,26 +161,27 @@ public void menu() {
 
   titulo_label = new GLabel(this, 300, 80, 700, 60);
   titulo_label.setTextAlign(GAlign.CENTER, GAlign.TOP);
-  titulo_label.setText("Drunk Battle Royale");
+  titulo_label.setText("Battle Royale");
   titulo_label.setOpaque(false);
 
-  login_button = new GButton(this, 500, 300, 300, 70);
+  login_button = new GButton(this, 250, 300, 300, 120);
   login_button.setText("Login");
-  login_button.setLocalColorScheme(GCScheme.GREEN_SCHEME);
+  login_button.setLocalColorScheme(7);
   login_button.addEventHandler(this, "login_button_click");
 
-  registar_button = new GButton(this, 500, 400, 300, 70);
+  registar_button = new GButton(this, 700, 300, 300, 120);
   registar_button.setText("Registar");
+  registar_button.setLocalColorScheme(5);
   registar_button.addEventHandler(this, "registar_button_click");
 
-  cancelar_button = new GButton(this, 500, 500, 300, 70);
+  cancelar_button = new GButton(this, 250, 500, 300, 120);
   cancelar_button.setText("Cancelar");
-  cancelar_button.setLocalColorScheme(GCScheme.RED_SCHEME);
+  cancelar_button.setLocalColorScheme(4);
   cancelar_button.addEventHandler(this, "cancelar_button_click");
 
-  opcoes_button = new GButton(this, 500, 600, 300, 70);
+  opcoes_button = new GButton(this, 700, 500, 300, 120);
   opcoes_button.setText("Opções");
-  opcoes_button.setLocalColorScheme(GCScheme.YELLOW_SCHEME);
+  opcoes_button.setLocalColorScheme(3);
   opcoes_button.addEventHandler(this, "opcoes_button_click");
   
   jogo_pontos_button = new GButton(this, 850, 60, 60, 60);
@@ -520,27 +521,14 @@ synchronized public void drawJogo(PApplet appc, GWinData data) {
   
   try 
    {
-     //println("a");
       appc.background(255);
       appc.imageMode(CORNER);
-      //PImage aux = loadImage("./Assets/background.png");
-      //aux.resize(1200,800);
-      //appc.image(aux,0 , 0);
       appc.fill(0);
       
       if (estadoJogo) {
         
         jogo.draw(appc);
       
-      
-        appc.pushMatrix();
-        appc.fill(255, 255, 0);
-        appc.stroke(0);
-        appc.rect(300, 0, 200, 30);
-        appc.fill(255, 0, 0);
-        appc.noStroke();
-        appc.rect(300, 0, energiaAtual * 10, 30);
-        appc.popMatrix();
         raio.setText("Raio: "+  Math.round(raioAtual));
         agilidadeLabel.setText("Agilidade: " + Math.round(agilidadeAtual * 100.0) / 100.0 +"");
      }
