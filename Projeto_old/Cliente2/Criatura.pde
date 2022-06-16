@@ -1,5 +1,5 @@
 
-class Criatura {
+class Cristal {
   
   public float velocidade = 1;
   public float posX;
@@ -10,7 +10,7 @@ class Criatura {
   public float tam;
 
  
-  public Criatura( float posX, float posY, float dir, int tipo) {
+  public Cristal( float posX, float posY, float dir, int tipo) {
     //this.pos = new PVector(posX, posY);
     this.posX = posX;
     this.posY = posY;

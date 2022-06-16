@@ -1,18 +1,18 @@
--module(criaturas).
--export([novaCriatura/2,atualizaListaCriaturas/2,verificaColisoesCriaturaLista/2,atualizaCriatura/2]).
+-module(Cristais).
+-export([novoCristal/2,atualizaListaCristais/2,verificaColisoesCristalLista/2,atualizaCristal/2]).
 -import(jogadores, [jogadorRaioMin/1]).
 -import(auxiliar, [multiplicaVector/2, normalizaVector/1, meioVectores/2, adicionaPares/2, distancia/2,posiciona/2]).
 -import (math, [sqrt/1, pow/2, cos/1, sin/1, pi/0]).
 
-novaCriatura(Tipo,ListaObstaculos) ->
+novoCristal(Tipo,ListaObstaculos) ->
     Direcao = float(rand:uniform(360)),
     Tamanho = 50,
     Velocidade = 5.0,
     Posicao = posiciona(50,ListaObstaculos),
     {Posicao, Direcao, Tamanho, Tipo, Velocidade}.
 
-atualizaCriatura(Criatura, ListaObstaculos)->
-    {Posicao, Direcao, Tamanho, Tipo, Velocidade}=Criatura,
+atualizaCristal(Cristal, ListaObstaculos)->
+    {Posicao, Direcao, Tamanho, Tipo, Velocidade}=Cristal,
     Radians = (Direcao * pi()) / 180,
     VecDirecao = normalizaVector(multiplicaVector({cos(Radians), sin(Radians)}, Velocidade)),
     NPosicao= adicionaPares(Posicao, VecDirecao),
@@ -49,21 +49,21 @@ atualizaCriatura(Criatura, ListaObstaculos)->
     end,
 
     Nposs = {NovoX, NovoY},
-    verificaColisaoObstaculos({Nposs, VecX, Tamanho, Tipo, Velocidade},ListaObstaculos).
+    verificaColisaoAzuis({Nposs, VecX, Tamanho, Tipo, Velocidade},ListaObstaculos).
 
-atualizaListaCriaturas(Criaturas, ListaObstaculos) ->
-    [atualizaCriatura(Criatura, ListaObstaculos) || Criatura <- Criaturas].
+atualizaListaCristais(Cristais, ListaObstaculos) ->
+    [atualizaCristal(Cristal, ListaObstaculos) || Cristal <- Cristais].
 
 
 
-verificaColisaoObstaculos(Criatura, ListaObstaculos) ->
-    {PosicaoA, DirecaoX, Tamanho, Tipo, Velocidade}=Criatura,
+verificaColisaoAzuis(Cristal, ListaObstaculos) ->
+    {PosicaoA, DirecaoX, Tamanho, Tipo, Velocidade}=Cristal,
     [Obs1 | T] = ListaObstaculos,
     [Obs2 | Ta1] = T,
     [Obs3 | T4] = Ta1,
-    T1 = verificaColisaoObstaculo(Criatura,Obs1),
-    T2 = verificaColisaoObstaculo(Criatura,Obs2),
-    T3 = verificaColisaoObstaculo(Criatura,Obs3),
+    T1 = verificaColisaoObstaculo(Cristal,Obs1),
+    T2 = verificaColisaoObstaculo(Cristal,Obs2),
+    T3 = verificaColisaoObstaculo(Cristal,Obs3),
     if
         T1 or T2 or T3 ->
             Direcao = DirecaoX-180,
@@ -78,9 +78,9 @@ verificaColisaoObstaculos(Criatura, ListaObstaculos) ->
 
 
 
-verificaColisaoObstaculo( Criatura, Obstaculo ) ->
+verificaColisaoObstaculo( Cristal, Obstaculo ) ->
     {ObsX, ObsY, Tamanho1} = Obstaculo,
-    {Posicao, Direcao, Tamanho, Tipo, Velocidade}=Criatura,
+    {Posicao, Direcao, Tamanho, Tipo, Velocidade}=Cristal,
     D=distancia(Posicao, {ObsX,ObsY}),
     if
         D < (Tamanho1/2 + Tamanho/2) -> true;
@@ -89,20 +89,20 @@ verificaColisaoObstaculo( Criatura, Obstaculo ) ->
 
 
     
-verificaColisoesCriaturaLista( Jogador, Criaturas ) ->
+verificaColisoesCristalLista( Jogador, Cristais ) ->
     if
-        Criaturas == [] -> [];
+        Cristais == [] -> [];
         true -> 
-            [Criatura | Cauda ] = Criaturas,
-            verificaColisaoCriatura(Jogador, Criatura) ++ verificaColisoesCriaturaLista(Jogador, Cauda)
+            [Cristal | Cauda ] = Cristais,
+            verificaColisaoCristal(Jogador, Cristal) ++ verificaColisoesCristalLista(Jogador, Cauda)
     end.
 
-verificaColisaoCriatura( Jogador, Criatura ) ->
+verificaColisaoCristal( Jogador, Cristal ) ->
     % testar se o jogador tem raio minimo se sim pode dar return a true se colidiu
     {_,JPosicao, _, _, _,JRaio, _, _, _, _, _, _, _,_, _,_}=Jogador,
-    {CPosicao, _, CTamanho, _, _}=Criatura,
+    {CPosicao, _, CTamanho, _, _}=Cristal,
     D=distancia(JPosicao, CPosicao),
     if
-        D < (JRaio/2 + CTamanho/2) -> [Criatura];
+        D < (JRaio/2 + CTamanho/2) -> [Cristal];
         true -> []
     end.

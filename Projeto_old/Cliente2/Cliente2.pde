@@ -47,7 +47,7 @@ int f = 0;
 int conta = 0;
 Runnable runnablePontos;
 
-Jogo jogo = new Jogo(new ArrayList<Jogador>(), new ArrayList<Criatura>(), new ArrayList<Obstaculo>(), new HashMap<String, Integer>());
+Jogo jogo = new Jogo(new ArrayList<Jogador>(), new ArrayList<Cristal>(), new ArrayList<Obstaculo>(), new HashMap<String, Integer>());
 
 PImage red, bg;
 Conector con = new Conector();
@@ -780,7 +780,7 @@ public synchronized void updateJogo(String res) {
       pontos.put(nome, pontuacao);
     }
 
-    ArrayList<Criatura> criaturas = new ArrayList<Criatura>();
+    ArrayList<Cristal> Cristais = new ArrayList<Cristal>();
 
     int numVerdes = new Integer(stk.nextToken()).intValue();
 
@@ -792,8 +792,8 @@ public synchronized void updateJogo(String res) {
       float dir = new Float(stk.nextToken()).floatValue();
       int tipo = 0;
 
-      Criatura c = new Criatura (posX, posY, dir, tipo);
-      criaturas.add(c);
+      Cristal c = new Cristal (posX, posY, dir, tipo);
+      Cristais.add(c);
     }
 
     int numVermelhos = new Integer(stk.nextToken()).intValue();
@@ -805,8 +805,8 @@ public synchronized void updateJogo(String res) {
       float dir = new Float(stk.nextToken()).floatValue();
       int tipo = 1;
 
-      Criatura c = new Criatura (posX, posY, dir, tipo);
-      criaturas.add(c);
+      Cristal c = new Cristal (posX, posY, dir, tipo);
+      Cristais.add(c);
     }
 
     ArrayList<Obstaculo> obstaculos = new ArrayList<Obstaculo>();
@@ -823,7 +823,7 @@ public synchronized void updateJogo(String res) {
       obstaculos.add(o);
     }
 
-    jogo.update (jogadores, criaturas, obstaculos, pontos);
+    jogo.update (jogadores, Cristais, obstaculos, pontos);
     
   }
   }

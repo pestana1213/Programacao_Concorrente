@@ -5,7 +5,7 @@ cd("C:/Users/Dimitri/Desktop/Programacao_Concorrente-main/Programacao_Concorrent
 c(estado).
 c(server).
 c(jogadores).
-c(criaturas).
+c(Cristais).
 c(auxiliar).
 c(conversores).
 c(login_manager).

@@ -1,7 +1,7 @@
 -module (estado).
 -export ([start_state/0,atualizaMelhoresPontos/2, converterInt/1]).
--import (criaturas, [novaCriatura/2,atualizaListaCriaturas/2,verificaColisoesCriaturaLista/2]).
--import (jogadores, [novoJogador/1,acelerarFrente/1, viraDireita/1, viraEsquerda/1,atualizaJogadores/4,calculaVelocidadeMax/1,vaiParaCoordenadas/3 ]).  
+-import (cristais, [novoCristal/2,atualizaListaCristais/2,verificaColisoesCristalLista/2]).
+-import (jogadores, [novoJogador/1,acelerarFrente/1, atualizaJogadores/4,calculaVelocidadeMax/1,vaiParaCoordenadas/3 ]).  
 -import (timer, [send_after/3]).
 -import (auxiliar, [multiplicaVector/2, geraObstaculo/2, normalizaVector/1]).
 -import (conversores, [formatState/1,formatarPontuacoes/1, formataTecla/1]).
@@ -285,9 +285,9 @@ gameManager(Estado, MelhoresPontuacoes)->
             {ListaJogadores, ListaVerdes, ListaReds, ListaAzul, TamanhoEcra} = Estado,
             if 
                 length(ListaReds)<3 ->
-                    %io:format("Vou Adicionar uma criatura vermelha~n"),
-                    Creature = novaCriatura(r,ListaAzul),
-                    gameManager({ListaJogadores, ListaVerdes, ListaReds ++ [Creature],ListaAzul, TamanhoEcra},MelhoresPontuacoes);
+                    %io:format("Vou Adicionar uma Cristal vermelha~n"),
+                    Cristal = novoCristal(r,ListaAzul),
+                    gameManager({ListaJogadores, ListaVerdes, ListaReds ++ [Cristal],ListaAzul, TamanhoEcra},MelhoresPontuacoes);
                     
                 true ->
                     gameManager({ListaJogadores, ListaVerdes, ListaReds,ListaAzul, TamanhoEcra},MelhoresPontuacoes)
@@ -299,9 +299,9 @@ gameManager(Estado, MelhoresPontuacoes)->
             {ListaJogadores, ListaVerdes, ListaReds, ListaBlues, TamanhoEcra} = Estado,
             if 
                 length(ListaBlues)<3 ->
-                    %io:format("Vou Adicionar uma criatura vermelha~n"),
-                    Creature = novaCriatura(r,ListaBlues),
-                    gameManager({ListaJogadores, ListaVerdes, ListaReds ,ListaBlues ++ [Creature], TamanhoEcra},MelhoresPontuacoes);
+                    %io:format("Vou Adicionar uma Cristal vermelha~n"),
+                    Cristal = novoCristal(r,ListaBlues),
+                    gameManager({ListaJogadores, ListaVerdes, ListaReds ,ListaBlues ++ [Cristal], TamanhoEcra},MelhoresPontuacoes);
                     
                 true ->
                     gameManager({ListaJogadores, ListaVerdes, ListaReds,ListaBlues, TamanhoEcra},MelhoresPontuacoes)
@@ -313,9 +313,9 @@ gameManager(Estado, MelhoresPontuacoes)->
             {ListaJogadores, ListaVerdes, ListaReds, ListaAzul, TamanhoEcra} = Estado,
             if 
                 length(ListaVerdes)<3 ->
-                    %io:format("Vou Adicionar uma criatura Verde~n"),
-                    Creature = novaCriatura(v,ListaAzul),
-                    gameManager({ListaJogadores, ListaVerdes ++ [Creature], ListaReds ,ListaAzul, TamanhoEcra},MelhoresPontuacoes);
+                    %io:format("Vou Adicionar uma Cristal Verde~n"),
+                    Cristal = novoCristal(v,ListaAzul),
+                    gameManager({ListaJogadores, ListaVerdes ++ [Cristal], ListaReds ,ListaAzul, TamanhoEcra},MelhoresPontuacoes);
                     
                 true ->
                     gameManager({ListaJogadores, ListaVerdes, ListaReds ,ListaAzul, TamanhoEcra},MelhoresPontuacoes)
@@ -327,13 +327,13 @@ update(Estado) ->
     {ListaJogadores, ListaVerdes, ListaReds, ListaBlues, TamanhoEcra} = Estado,
     %COLISOES
 
-    ListaColisaoVerde = [verificaColisoesCriaturaLista(Jogador,ListaVerdes) || {Jogador,{_,_}} <- ListaJogadores],
-    ListaColisaoVermelho = [verificaColisoesCriaturaLista(Jogador,ListaReds) || {Jogador,{_,_}} <- ListaJogadores],
-    ListaColisaoAzul = [verificaColisoesCriaturaLista(Jogador,ListaBlues) || {Jogador,{_,_}} <- ListaJogadores],
+    ListaColisaoVerde = [verificaColisoesCristalLista(Jogador,ListaVerdes) || {Jogador,{_,_}} <- ListaJogadores],
+    ListaColisaoVermelho = [verificaColisoesCristalLista(Jogador,ListaReds) || {Jogador,{_,_}} <- ListaJogadores],
+    ListaColisaoAzul = [verificaColisoesCristalLista(Jogador,ListaBlues) || {Jogador,{_,_}} <- ListaJogadores],
     
-    LV=atualizaListaCriaturas(ListaVerdes--lists:append(ListaColisaoVerde),[]),
-    LR=atualizaListaCriaturas(ListaReds--lists:append(ListaColisaoVermelho),[]),
-    LB=atualizaListaCriaturas(ListaBlues--lists:append(ListaColisaoAzul),[]),
+    LV=atualizaListaCristais(ListaVerdes--lists:append(ListaColisaoVerde),[]),
+    LR=atualizaListaCristais(ListaReds--lists:append(ListaColisaoVermelho),[]),
+    LB=atualizaListaCristais(ListaBlues--lists:append(ListaColisaoAzul),[]),
     
     LJ=atualizaJogadores(ListaJogadores,ListaColisaoVerde ,ListaColisaoVermelho, ListaColisaoAzul),
     %io:fwrite("Lista Nao Filtrada: ~p ~n", [LJ]),
@@ -430,9 +430,9 @@ updateBoost (JogadorAtual) ->
     {E,Posicao, Direcao, Velocidade, Cor,Raio,  AceleracaoLinear, AceleracaoAngular,    Arrasto, RaioMax,RaioMin,Boost,Pontuacao} = J,
 
     if 
-        Raio >= (RaioMin+20) ->
-            NovoTamanho = Raio - 20,
-            NBoost = Boost + 0.25;
+        Raio >= (RaioMin+70) ->
+            NovoTamanho = Raio - 70,
+            NBoost = Boost + 0.005;
         true ->
             NovoTamanho = Raio,
             NBoost = Boost

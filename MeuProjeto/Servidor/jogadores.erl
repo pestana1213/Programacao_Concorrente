@@ -1,5 +1,5 @@
 -module(jogadores).
--export([novoJogador/1,acelerarFrente/1, viraDireita/1, viraEsquerda/1 ,atualizaJogadores/4,calculaVelocidadeMax/1, vaiParaCoordenadas/3]).
+-export([novoJogador/1,acelerarFrente/1, atualizaJogadores/4,calculaVelocidadeMax/1, vaiParaCoordenadas/3]).
 -import(auxiliar, [multiplicaVector/2, normalizaVector/1, adicionaPares/2, distancia/2,posiciona/1]).
 -import (math, [sqrt/1, pow/2, acos/1, cos/1, sin/1, pi/0]).
 
@@ -32,15 +32,9 @@ calculaVelocidadeMax(Raio) ->
 
 
 %
-verificaColisaoObstaculos(Jogador, ListaAzul) ->
+verificaColisaoAzuis(Jogador, ListaAzul) ->
     {true,Posicao, Direcao, Velocidade, CorAtual,Raio, AceleracaoLinear, AceleracaoAngular,    Arrasto, RaioMax,RaioMin, Agilidade,Pontuacao}=Jogador,
     {PosX,PosY} = Posicao,
-    %[Obs1 | T] = ListaAzul,
-    %[Obs2 | Ta1] = T,
-    %[Obs3 | T4] = Ta1,
-    %T1 = verificaColisaoObstaculo(Jogador,Obs1),
-    %T2 = verificaColisaoObstaculo(Jogador,Obs2),
-    %T3 = verificaColisaoObstaculo(Jogador,Obs3),
     T5 = verificaColisaoLimiteMapa(Jogador),
     %io:fwrite("RAIO MINIMO: ~p ~n", [RaioMin]),
     %io:fwrite("RAIO: ~p ~n", [Raio]),
@@ -54,13 +48,13 @@ verificaColisaoObstaculos(Jogador, ListaAzul) ->
             Radians = (DirecaoA * pi()) / 180,
             if 
                 PosX >= 1000 -> 
-                    NPosicao=adicionaPares(Posicao,{-1299,0});
+                    NPosicao=adicionaPares(Posicao,{-1299 + Raio ,0});
                 PosX =< 300 -> 
-                    NPosicao=adicionaPares(Posicao,{1299,0});
+                    NPosicao=adicionaPares(Posicao,{1299 - Raio,0});
                 PosY >= 400 -> 
-                   NPosicao=adicionaPares(Posicao,{0,-700 });
+                   NPosicao=adicionaPares(Posicao,{0,-700 + Raio });
                true -> 
-                   NPosicao=adicionaPares(Posicao,{0,700})
+                   NPosicao=adicionaPares(Posicao,{0,700 - Raio})
             end,
             NPosicao;
     
@@ -85,23 +79,8 @@ verificaColisaoLimiteMapa (Jogador) ->
 
 
 
-verificaColisaoObstaculo( Jogador, Obstaculo ) ->
-    %{ObsX, ObsY, Tamanho1} = Obstaculo,
-    %{true,Posicao, _, _, _,Raio, _, _, _, _, _, _, _,_, _,_}=Jogador,
-    %D=distancia(Posicao, {ObsX,ObsY}),
-    %if
-    %    D < (Tamanho1/2 + Raio/2) -> true;
-    %    true -> false
-    %end.
-
-    false.
-
-%
-
-
-
-atualizaColisaoVerdes( Jogador, Criaturas ) ->
-    TamanhoLista = length(Criaturas),
+atualizaColisaoVerdes( Jogador, Cristais ) ->
+    TamanhoLista = length(Cristais),
     {{E,Posicao, Direcao, Velocidade, CorAtual,Raio, AceleracaoLinear, AceleracaoAngular,    Arrasto, RaioMax,RaioMin, Agilidade,Pontuacao},{U,P}} = Jogador,
     
     if 
@@ -122,8 +101,8 @@ atualizaColisaoVerdes( Jogador, Criaturas ) ->
 
 
 
-atualizaColisaoVermelhos( Jogador, Criaturas ) ->
-    TamanhoLista = length(Criaturas),
+atualizaColisaoVermelhos( Jogador, Cristais ) ->
+    TamanhoLista = length(Cristais),
     {{E,Posicao, Direcao, Velocidade, CorAtual,Raio, AceleracaoLinear, AceleracaoAngular,    Arrasto, RaioMax,RaioMin, Agilidade,Pontuacao},{U,P}} = Jogador,
 
     if 
@@ -143,8 +122,8 @@ atualizaColisaoVermelhos( Jogador, Criaturas ) ->
     {{E,Posicao, Direcao, Velocidade, NCorAtual,Raio, AceleracaoLinear, AceleracaoAngular,    Arrasto, RaioMax,RaioMin, Agilidade,Pontuacao},{U,P}} .
 
 
-atualizaColisaoAzuis( Jogador, Criaturas ) ->
-    TamanhoLista = length(Criaturas),
+atualizaColisaoAzuis( Jogador, Cristais ) ->
+    TamanhoLista = length(Cristais),
     {{E,Posicao, Direcao, Velocidade, CorAtual,Raio, AceleracaoLinear, AceleracaoAngular,    Arrasto, RaioMax,RaioMin, Agilidade,Pontuacao},{U,P}} = Jogador,
 
     if 
@@ -225,19 +204,8 @@ movimentaJogador(Jogador) ->
 
 
     verificaColisaoJogadores2 (Jogador1, Jogador2) ->
-        %io:format("Jogador1  ~p~n",[Jogador1]),
-
-        %vermelho > verde > azul > vermelho
-        % 1 > 0 > 2 > 1
-
-        %E = true,
-        %DirecaoA = Direcao-180,
-        %Radians = (DirecaoA * pi()) / 180,
-        %VecDirecao = multiplicaVector({cos(Radians), sin(Radians)}, 20),
-        %NPosicao= adicionaPares(Posicao, VecDirecao);
 
         {E1,NPosicao1, Direcao1, Velocidade1, Cor1, Tamanho1, AceleracaoLinear1, AceleracaoAngular1, Arrasto1, RaioMax1, RaioMin1, Agilidade1, Pontuacao1} = Jogador1,
-        %io:format("Jogador2  ~p~n",[Jogador2]),
         {_,NPosicao2, _, _, Cor2, Tamanho2, _, _, _, _, _, _, _} = Jogador2,
         {PosX1,PosY1} = NPosicao1,
         {PosX2,PosY2} = NPosicao2,
@@ -297,7 +265,7 @@ atualizaJogadores (ListaJogadores,ListaColisaoVerde ,ListaColisaoVermelho, Lista
     %io:fwrite("Lista Nao Filtrada: ~p ~n", [ListaJogadores]),
     ListaJogadoresMexidos = [{movimentaJogador(Jogador),{U,P}} || {Jogador,{U,P}} <- ListaJogadores],
     
-    ListaJogadoesObjetos = [{verificaColisaoObstaculos(Jogador,[]),{U,P}} || {Jogador,{U,P}} <- ListaJogadoresMexidos],
+    ListaJogadoesObjetos = [{verificaColisaoAzuis(Jogador,[]),{U,P}} || {Jogador,{U,P}} <- ListaJogadoresMexidos],
     ListaJogadoesObjetosF = [J || {J,{_,_}} <- ListaJogadoesObjetos],
     ListaJogadoresColisaoJogadores = [{verificaColisaoJogadoresL(Jogador,ListaJogadoesObjetosF--[Jogador]),{U,P}} || {Jogador,{U,P}} <- ListaJogadoesObjetos],
     LengthVerdes = length(ListaColisaoVerde),
@@ -357,29 +325,6 @@ acelerarFrente(Jogador) ->
         true -> 
             Jogador
     end.
-
-
-viraDireita(Jogador) ->
-    {E,Posicao, Direcao, Velocidade, Cor,Raio,  AceleracaoLinear, AceleracaoAngular,    Arrasto, RaioMax,RaioMin,Agilidade,Pontuacao} = Jogador,
-    case E of
-        true ->
-            NDirecao = Direcao + AceleracaoAngular * Agilidade/2 ,
-            {true,Posicao, NDirecao, Velocidade, Cor,Raio,  AceleracaoLinear, AceleracaoAngular,    Arrasto, RaioMax,RaioMin,Agilidade,Pontuacao};
-        false -> 
-            Jogador
-    end.
-
-viraEsquerda(Jogador) ->
-    {E,Posicao, Direcao, Velocidade, Cor,Raio,  AceleracaoLinear, AceleracaoAngular,    Arrasto, RaioMax,RaioMin,Agilidade,Pontuacao}= Jogador,
-    case E of
-        true ->
-            NDirecao = Direcao - AceleracaoAngular  * Agilidade/2,
-            {true,Posicao, NDirecao, Velocidade, Cor,Raio,  AceleracaoLinear, AceleracaoAngular,    Arrasto, RaioMax,RaioMin,Agilidade,Pontuacao};
-        false->
-            Jogador
-        end.
-
-
 
 
 vaiParaCoordenadas(Jogador,X,Y) -> 

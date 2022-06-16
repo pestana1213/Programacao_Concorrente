@@ -35,7 +35,7 @@ calculaVelocidadeMax(Raio) ->
 
 
 %
-verificaColisaoObstaculos(Jogador, ListaObstaculos) ->
+verificaColisaoAzuis(Jogador, ListaObstaculos) ->
     {true,Posicao, Direcao, Velocidade, EnergiaAtual,Raio, AceleracaoLinear, AceleracaoAngular, EnergiaMax, GastoEnergia, GanhoEnergia, Arrasto, RaioMax,RaioMin, Agilidade,Pontuacao}=Jogador,
     {PosX,PosY} = Posicao,
     [Obs1 | T] = ListaObstaculos,
@@ -105,8 +105,8 @@ verificaColisaoObstaculo( Jogador, Obstaculo ) ->
 %
 
 
-atualizaColisaoVerdes( Jogador, Criaturas ) ->
-    TamanhoLista = length(Criaturas),
+atualizaColisaoVerdes( Jogador, Cristais ) ->
+    TamanhoLista = length(Cristais),
     {{E,Posicao, Direcao, Velocidade, EnergiaAtual,Raio, AceleracaoLinear, AceleracaoAngular, EnergiaMax, GastoEnergia, GanhoEnergia, Arrasto, RaioMax,RaioMin, Agilidade,Pontuacao},{U,P}} = Jogador,
 
     if 
@@ -128,8 +128,8 @@ atualizaColisaoVerdes( Jogador, Criaturas ) ->
 
 
 
-atualizaColisaoVermelhos( Jogador, Criaturas ) ->
-    TamanhoLista = length(Criaturas),
+atualizaColisaoVermelhos( Jogador, Cristais ) ->
+    TamanhoLista = length(Cristais),
     {{E,Posicao, Direcao, Velocidade, EnergiaAtual,Raio, AceleracaoLinear, AceleracaoAngular, EnergiaMax, GastoEnergia, GanhoEnergia, Arrasto, RaioMax,RaioMin, Agilidade,Pontuacao},{U,P}} = Jogador,
 
     if 
@@ -244,7 +244,7 @@ atualizaJogadores (ListaJogadores,ListaColisaoVerde ,ListaColisaoVermelho, Lista
     
     ListaJogadoresMexidos = [{movimentaJogador(Jogador),{U,P}} || {Jogador,{U,P}} <- ListaJogadores],
     
-    ListaJogadoesObjetos = [{verificaColisaoObstaculos(Jogador,ListaObstaculos),{U,P}} || {Jogador,{U,P}} <- ListaJogadoresMexidos],
+    ListaJogadoesObjetos = [{verificaColisaoAzuis(Jogador,ListaObstaculos),{U,P}} || {Jogador,{U,P}} <- ListaJogadoresMexidos],
     ListaJogadoesObjetosF = [J || {J,{_,_}} <- ListaJogadoesObjetos],
     ListaJogadoresColisaoJogadores = [{verificaColisaoJogadoresL(Jogador,ListaJogadoesObjetosF--[Jogador],ListaObstaculos),{U,P}} || {Jogador,{U,P}} <- ListaJogadoesObjetos],
     LengthVerdes = length(ListaColisaoVerde),

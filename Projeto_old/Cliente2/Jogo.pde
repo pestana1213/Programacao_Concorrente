@@ -8,7 +8,7 @@ import java.util.HashMap;
 class Jogo {
 
   ArrayList<Jogador> players;
-  ArrayList<Criatura> criaturas;
+  ArrayList<Cristal> Cristais;
   ArrayList<Obstaculo> obstaculos;
   HashMap<String, Integer> pontos;
   //float thisPlayerPoints;
@@ -17,21 +17,21 @@ class Jogo {
 
 
 
-  public Jogo (ArrayList<Jogador> players, ArrayList<Criatura> criaturas, ArrayList<Obstaculo> obstaculos, HashMap<String, Integer> pontos) {
+  public Jogo (ArrayList<Jogador> players, ArrayList<Cristal> Cristais, ArrayList<Obstaculo> obstaculos, HashMap<String, Integer> pontos) {
 
       this.players  = players;
-      this.criaturas = criaturas;
+      this.Cristais = Cristais;
       this.obstaculos = obstaculos;
       this.pontos = pontos;
       this.l = new ReentrantLock();
   }
 
-  void update (ArrayList<Jogador> players, ArrayList<Criatura> criaturas, ArrayList<Obstaculo> obstaculos, HashMap<String, Integer> pontos) {
+  void update (ArrayList<Jogador> players, ArrayList<Cristal> Cristais, ArrayList<Obstaculo> obstaculos, HashMap<String, Integer> pontos) {
 
     this.l.lock();
     try {
       this.players  = players;
-      this.criaturas = criaturas;
+      this.Cristais = Cristais;
       this.obstaculos = obstaculos;
       this.pontos = pontos;
     }finally{
@@ -42,7 +42,7 @@ class Jogo {
 
   void draw( PApplet appc) {
 
-    for(Criatura c: this.criaturas ) {
+    for(Cristal c: this.Cristais ) {
         c.draw(appc);
     }
 

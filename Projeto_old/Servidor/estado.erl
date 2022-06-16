@@ -1,6 +1,6 @@
 -module (estado).
 -export ([start_state/0,atualizaMelhoresPontos/2]).
--import (criaturas, [novaCriatura/2,atualizaListaCriaturas/2,verificaColisoesCriaturaLista/2]).
+-import (Cristais, [novoCristal/2,atualizaListaCristais/2,verificaColisoesCristalLista/2]).
 -import (jogadores, [novoJogador/1,acelerarFrente/1, viraDireita/1, viraEsquerda/1,atualizaJogadores/4 ]).   
 -import (timer, [send_after/3]).
 -import (auxiliar, [geraObstaculo/2]).
@@ -193,9 +193,9 @@ gameManager(Estado, MelhoresPontuacoes)->
             {ListaJogadores, ListaVerdes, ListaReds, ListaObstaculos, TamanhoEcra} = Estado,
             if 
                 length(ListaReds)<3 ->
-                    %io:format("Vou Adicionar uma criatura vermelha~n"),
-                    Creature = novaCriatura(r,ListaObstaculos),
-                    gameManager({ListaJogadores, ListaVerdes, ListaReds ++ [Creature],ListaObstaculos, TamanhoEcra},MelhoresPontuacoes);
+                    %io:format("Vou Adicionar uma Cristal vermelha~n"),
+                    Cristal = novoCristal(r,ListaObstaculos),
+                    gameManager({ListaJogadores, ListaVerdes, ListaReds ++ [Cristal],ListaObstaculos, TamanhoEcra},MelhoresPontuacoes);
                     
                 true ->
                     gameManager({ListaJogadores, ListaVerdes, ListaReds,ListaObstaculos, TamanhoEcra},MelhoresPontuacoes)
@@ -207,9 +207,9 @@ gameManager(Estado, MelhoresPontuacoes)->
             {ListaJogadores, ListaVerdes, ListaReds, ListaObstaculos, TamanhoEcra} = Estado,
             if 
                 length(ListaVerdes)<3 ->
-                    %io:format("Vou Adicionar uma criatura Verde~n"),
-                    Creature = novaCriatura(v,ListaObstaculos),
-                    gameManager({ListaJogadores, ListaVerdes ++ [Creature], ListaReds ,ListaObstaculos, TamanhoEcra},MelhoresPontuacoes);
+                    %io:format("Vou Adicionar uma Cristal Verde~n"),
+                    Cristal = novoCristal(v,ListaObstaculos),
+                    gameManager({ListaJogadores, ListaVerdes ++ [Cristal], ListaReds ,ListaObstaculos, TamanhoEcra},MelhoresPontuacoes);
                     
                 true ->
                     gameManager({ListaJogadores, ListaVerdes, ListaReds ,ListaObstaculos, TamanhoEcra},MelhoresPontuacoes)
@@ -221,12 +221,12 @@ update(Estado) ->
     {ListaJogadores, ListaVerdes, ListaReds, ListaObstaculos, TamanhoEcra} = Estado,
     %COLISOES
 
-    ListaColisaoVerde = [verificaColisoesCriaturaLista(Jogador,ListaVerdes) || {Jogador,{_,_}} <- ListaJogadores],
-    ListaColisaoVermelho = [verificaColisoesCriaturaLista(Jogador,ListaReds) || {Jogador,{_,_}} <- ListaJogadores],
+    ListaColisaoVerde = [verificaColisoesCristalLista(Jogador,ListaVerdes) || {Jogador,{_,_}} <- ListaJogadores],
+    ListaColisaoVermelho = [verificaColisoesCristalLista(Jogador,ListaReds) || {Jogador,{_,_}} <- ListaJogadores],
 
     
-    LV=atualizaListaCriaturas(ListaVerdes--lists:append(ListaColisaoVerde),ListaObstaculos),
-    LR=atualizaListaCriaturas(ListaReds--lists:append(ListaColisaoVermelho),ListaObstaculos),
+    LV=atualizaListaCristais(ListaVerdes--lists:append(ListaColisaoVerde),ListaObstaculos),
+    LR=atualizaListaCristais(ListaReds--lists:append(ListaColisaoVermelho),ListaObstaculos),
 
     
     LJ=atualizaJogadores(ListaJogadores,ListaColisaoVerde ,ListaColisaoVermelho, ListaObstaculos),
