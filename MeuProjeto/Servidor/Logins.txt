@@ -1,2 +1,3 @@
-{"a", {"a",false}}.
-{"b", {"b",false}}.
+{"a", {"a",true}}.
+{"b", {"b",true}}.
+{"c", {"c",false}}.
