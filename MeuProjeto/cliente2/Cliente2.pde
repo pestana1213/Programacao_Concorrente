@@ -140,7 +140,7 @@ public void menu() {
 
    //ipLido = "192.168.1.69";
    ipLido = "localhost";
-   portaLida = "22343"; 
+   portaLida = "22346"; 
    boolean ok = con.connect(ipLido, Integer.parseInt(portaLida));  
 
   this.noLoop();
@@ -221,6 +221,121 @@ public void opcoes_button_click(GButton source, GEvent event) { //_CODE_:regista
 public void nova_partida_click(GButton source, GEvent event) { //_CODE_:registar_button:703554:
   println("nova_partida - GButton >> GEvent." + event + " @ " + millis());
   con.write("login " + lastNome + " " + lastPassword);
+  String res = "";
+ 
+    try {
+       while (res.equals("")){
+         Thread.sleep(300);
+         res = con.read();
+         println("resposta do server" + res);
+         server_connection_label.appendText(res);
+       }
+    }
+    catch(Exception e) {
+      
+    }
+      
+    
+
+    runnablePontos = new Runnable() {
+    public void run() {
+      try {  
+          
+          while (apresentarPontos) {
+          
+             
+            println("THREAD PONTOS " + andaThread++);
+            con.write("pontos");
+            Thread.sleep(5000);
+          }
+          threadMorreu = true;
+          
+        }
+      catch(Exception e ) {
+      }
+    }
+  };
+        
+
+  Runnable r = new Runnable() {
+    public void run() {
+      try {        
+        while (!con.read().equals("Comeca")) {
+          Thread.sleep(300);
+        }
+        criaJogoWindow();
+        println("Vou começar o jogo\n");
+        getSurface().setVisible(false);
+        estadoJogo = true;
+        jogo_window.frameRate(60);
+        jogo_window.setVisible(true);
+        while (estadoJogo) {
+          //println("a\n");
+          String estadoLido = con.read();
+
+          //println(estadoLido);
+
+          if (estadoLido.equals("Perdeu") ) {
+            perdeu_label = new GLabel(jogo_window, 0, 100, 1300, 400);
+            perdeu_label.setTextAlign(GAlign.CENTER, GAlign.MIDDLE);
+            perdeu_label.setFont(new Font("Arial", Font.PLAIN, 40));
+            perdeu_label.setText("");
+            perdeu_label.setOpaque(false);
+            scores.setText("");
+            raio.setText("");
+            agilidadeLabel.setText("");
+            perdeu_label.setText("PERDEU");
+            jogo_pontos_button.setVisible(true);
+            estadoJogo = false;
+            
+          } 
+          else if (estadoLido.equals("Venceu") ) {
+            perdeu_label = new GLabel(jogo_window, 0, 100, 1300, 400);
+            perdeu_label.setTextAlign(GAlign.CENTER, GAlign.MIDDLE);
+            perdeu_label.setFont(new Font("Arial", Font.PLAIN, 40));
+            perdeu_label.setText("");
+            perdeu_label.setOpaque(false);
+            scores.setText("");
+            raio.setText("");
+            agilidadeLabel.setText("");
+            perdeu_label.setText("VENCEU");
+            jogo_pontos_button.setVisible(true);
+            println("Visivel");
+            estadoJogo = false;
+            
+          }       
+          else {
+            //conta++;
+            //print("JOGO " + conta + "\n");
+            if (!estadoLido.equals(""))
+            {
+              updateJogo(estadoLido);
+            }
+            
+          }
+          
+
+          if (apresentarPontos && threadMorreu)
+            {
+              
+              try {
+                threadMorreu = false;
+                ranking = new Thread(runnablePontos);
+                ranking.start();
+              }
+              catch(Exception e ) {
+              }
+;
+            }
+        }
+      }
+      catch(Exception e ) {
+      }
+    }
+  };
+
+  thread = new Thread(r);
+  thread.start();
 
 } 
 
@@ -487,7 +602,6 @@ public void concluir_login_button_click(GButton source, GEvent event) {
             scores.setText("");
             raio.setText("");
             agilidadeLabel.setText("");
-            println("Cona");
             perdeu_label.setText("VENCEU");
             jogo_pontos_button.setVisible(true);
             println("Visivel");

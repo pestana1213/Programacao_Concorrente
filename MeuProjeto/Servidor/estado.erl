@@ -345,7 +345,7 @@ update(Estado) ->
 
     if 
         length (Vencedores) =:= 1 ->
-            io:fwrite("Nao houve vencedores~n"),
+            io:fwrite("Houve vencedores~n"),
             [P ! {line,"Venceu\n"} || {_,{_,P}} <- Vencedores],
             [statePid ! {leave,U,P} || {_,{U,P}} <- Vencedores],
             [statePid ! {atualizaPontos,U,P} || {_,{U,P}} <- Vencedores],

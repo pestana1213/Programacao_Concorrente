@@ -1,6 +1,2 @@
 {"a", {"a",false}}.
 {"b", {"b",false}}.
-{"c", {"c",false}}.
-{"da", {"da",false}}.
-{"f", {"f",false}}.
-{"g", {"g",false}}.
