@@ -1,4 +1,4 @@
-// Need G4P library //<>// //<>// //<>// //<>// //<>// //<>// //<>// //<>// //<>// //<>// //<>// //<>// //<>// //<>// //<>//
+// Need G4P library //<>// //<>// //<>// //<>// //<>// //<>// //<>// //<>// //<>// //<>// //<>//
 import g4p_controls.*;
 import java.util.*;
 import java.lang.*;
@@ -11,6 +11,7 @@ GButton registar_button;
 GButton cancelar_button; 
 GButton login_button;
 GButton opcoes_button;
+GButton nova_partida;
 GWindow menu_window;
 GWindow registo_window;
 GWindow login_window;
@@ -139,7 +140,7 @@ public void menu() {
 
    //ipLido = "192.168.1.69";
    ipLido = "localhost";
-   portaLida = "22345"; 
+   portaLida = "22343"; 
    boolean ok = con.connect(ipLido, Integer.parseInt(portaLida));  
 
   this.noLoop();
@@ -164,26 +165,31 @@ public void menu() {
   titulo_label.setText("Battle Royale");
   titulo_label.setOpaque(false);
 
-  login_button = new GButton(this, 250, 300, 300, 120);
+  login_button = new GButton(this, 150, 300, 300, 120);
   login_button.setText("Login");
   login_button.setLocalColorScheme(7);
   login_button.addEventHandler(this, "login_button_click");
 
-  registar_button = new GButton(this, 700, 300, 300, 120);
+  registar_button = new GButton(this, 800, 300, 300, 120);
   registar_button.setText("Registar");
   registar_button.setLocalColorScheme(5);
   registar_button.addEventHandler(this, "registar_button_click");
 
-  cancelar_button = new GButton(this, 250, 500, 300, 120);
+  cancelar_button = new GButton(this, 150, 500, 300, 120);
   cancelar_button.setText("Cancelar");
   cancelar_button.setLocalColorScheme(4);
   cancelar_button.addEventHandler(this, "cancelar_button_click");
 
-  opcoes_button = new GButton(this, 700, 500, 300, 120);
+  opcoes_button = new GButton(this, 800, 500, 300, 120);
   opcoes_button.setText("Opções");
   opcoes_button.setLocalColorScheme(3);
   opcoes_button.addEventHandler(this, "opcoes_button_click");
-  
+
+  nova_partida = new GButton(this, 475, 400, 300, 120);
+  nova_partida.setText("Nova Partida");
+  nova_partida.setLocalColorScheme(3);
+  nova_partida.addEventHandler(this, "nova_partida_click");
+
   jogo_pontos_button = new GButton(this, 850, 60, 60, 60);
   jogo_pontos_button.setIcon("Assets/ranking.png", 1, GAlign.SOUTH, GAlign.CENTER, GAlign.MIDDLE);
   jogo_pontos_button.setLocalColorScheme(GCScheme.SCHEME_15);
@@ -210,6 +216,12 @@ public void opcoes_button_click(GButton source, GEvent event) { //_CODE_:regista
   println("registar_button - GButton >> GEvent." + event + " @ " + millis());
   opcoes();
   getSurface().setVisible(false);
+} 
+
+public void nova_partida_click(GButton source, GEvent event) { //_CODE_:registar_button:703554:
+  println("nova_partida - GButton >> GEvent." + event + " @ " + millis());
+  con.write("login " + lastNome + " " + lastPassword);
+
 } 
 
 public void registar_button_click(GButton source, GEvent event) { //_CODE_:registar_button:703554:
@@ -756,8 +768,8 @@ public synchronized void updateJogo(String res) {
   
   {
    
-
-  //println("li isto " + res); //<>// //<>//
+ //<>//
+  //println("li isto " + res); //<>// //<>// //<>//
   StringTokenizer stk = new StringTokenizer(res, " ");
 
   if (stk.nextToken().equals("Pontos")) {
