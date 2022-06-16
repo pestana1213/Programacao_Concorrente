@@ -4,6 +4,8 @@
 -import(auxiliar, [multiplicaVector/2, normalizaVector/1, meioVectores/2, adicionaPares/2, distancia/2,posiciona/1]).
 -import (math, [sqrt/1, pow/2, cos/1, sin/1, pi/0]).
 
+ %Classe dos cristais 
+
 novoCristal(Tipo,ListaAzul) ->
     Direcao = float(rand:uniform(360)),
     Tamanho = 25,
@@ -14,8 +16,6 @@ novoCristal(Tipo,ListaAzul) ->
 atualizaCristal(Cristal, ListaAzul)->
     {Posicao, Direcao, Tamanho, Tipo, Velocidade}=Cristal,
     Radians = (Direcao * pi()) / 180,
-    %VecDirecao = normalizaVector(multiplicaVector({cos(Radians), sin(Radians)}, Velocidade)),
-    %NPosicao= adicionaPares(Posicao, VecDirecao),
     {NovoX, NovoY} = Posicao,
 
     Nposs = {NovoX, NovoY},
@@ -23,7 +23,6 @@ atualizaCristal(Cristal, ListaAzul)->
 
 atualizaListaCristais(Cristais, ListaAzul) ->
     [atualizaCristal(Cristal, ListaAzul) || Cristal <- Cristais].
-
 
 
 verificaColisaoAzuis(Cristal, ListaAzul) ->
@@ -42,8 +41,9 @@ verificaColisoesCristalLista( Jogador, Cristais ) ->
             verificaColisaoCristal(Jogador, Cristal) ++ verificaColisoesCristalLista(Jogador, Cauda)
     end.
 
+% testar se o jogador tem raio minimo se sim pode dar return a true se colidiu
+
 verificaColisaoCristal( Jogador, Cristal ) ->
-    % testar se o jogador tem raio minimo se sim pode dar return a true se colidiu
     {Posicao, Direcao, Tamanho, Tipo, Velocidade} = Cristal,
     {_,JPosicao, _, _, _,JRaio, _, _, _, _, _, _,_}=Jogador,
     {CPosicao, _, CTamanho, _, _}=Cristal,

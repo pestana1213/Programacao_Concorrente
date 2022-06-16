@@ -2,6 +2,7 @@
 -export ([start/0]).
 -import (login_manager, [start_Login_Manager/1, create_account/2, close_account/2, login/2, logout/1]). 
 -import (estado, [start_state/0]). 
+%Cria o servidor 
 
 start () ->
     io:format("Iniciei o Server~n"),
@@ -44,9 +45,6 @@ authenticator(Sock) ->
                     [Pass1 | T] = Passs,
                     Pass = Pass1
             end,
-            %io:format("Acao = ~p~n",[Acao]),
-            %io:format("User = ~p~n",[User]),
-            %io:format("Pass = ~p~n",[Pass]),
 
             case Acao of
                 "login" when User =:= "" ->

@@ -1,6 +1,7 @@
 -module (login_manager).
 -export( [start_Login_Manager/1, create_account/2, close_account/2, login/2, logout/1, mapa_para_string/1,maps_para_string/1,booleanoString/1]).
 
+%Classe para fazer login
 start_Login_Manager (Mapa) ->
     Pid = spawn ( fun() -> loop ( Mapa ) end ),
     register (module,Pid).

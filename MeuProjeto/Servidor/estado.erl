@@ -17,7 +17,6 @@ start_state() ->
     SpawnVerdes = spawn ( fun() -> adicionarReds(game) end),   
     SpawnAzuis= spawn ( fun() -> adicionarBlues(game) end), 
     Salas = criaSalas(),
-    %io:format("Salas ~n ~p", [Salas]),
     register(statePid,spawn( fun() -> lounge(Salas)  end))
     .
 
@@ -27,10 +26,11 @@ adicionarReds (Pid) -> receive after 500 -> Pid ! {addReds, self()}, adicionarRe
 adicionarVerdes (Pid) -> receive after 500 -> Pid ! {addVerde, self()}, adicionarVerdes(Pid) end.
 adicionarBlues (Pid) -> receive after 500 -> Pid ! {addBlue, self()}, adicionarBlues(Pid) end.
 
-novaSala() -> 
 
+novaSala() -> 
     [{spawn(fun() -> estado([],[]) end),[]}].
 
+%Cria 4 salas com Pids diferentes 
 criaSalas() -> 
     novaSala() ++ novaSala() ++ novaSala() ++ novaSala(). 
 
@@ -62,6 +62,7 @@ remove(X, L) ->
     [Y || Y <- L, Y =/= X].
 
 
+%Encontra o Jogador na sala onde ele se encontra
 ondEstaJogador([],UserProcess) -> []; 
 
 ondEstaJogador([{Pid,[X|Y]}|T],UserProcess) -> 
@@ -77,6 +78,8 @@ ondEstaJogador([{Pid,[X|Y]}|T],UserProcess) ->
         end
     end.
 
+%Verifica se a sala esta cheia ou nao 
+%Se estiver entao vai para a sala seguinte 
 
 verificaSala([H|T]) -> 
     {Pid,ListaJogadores} = H, 
@@ -95,7 +98,8 @@ estado(Atuais_Jogadores, Espera_Jogadores) ->
         {ready, Username, UserProcess} -> 
             io:format("len ~p ~n", [length (Espera_Jogadores)]),   
             if
-                length (Espera_Jogadores) < 1 ->  
+                %Limite minimo de jogadores
+                length (Espera_Jogadores) < 2 ->  
                     io:format("Recebi ready de ~p mas ele vai esperar ~n", [Username]),                                                     % Recebemos ready de um user mas o jogo está cheio, vai esperar
                     estado(Atuais_Jogadores, Espera_Jogadores ++ [{Username, UserProcess}]);      %Adicionamos lo entao aos jogadores em espera
                 true -> 
@@ -163,8 +167,6 @@ removeJogador(Estado,Jogador) ->
     State.
 
 
-
-
 atualizaMelhoresPontos(Map,[]) -> Map;
 atualizaMelhoresPontos(Map,[H|T]) -> 
     {U,P} = H,
@@ -178,7 +180,7 @@ atualizaMelhoresPontos(Map,[H|T]) ->
     end.
             
 
-            
+%Controla tudo o que se passa no jogo 
 gameManager(Estado, MelhoresPontuacoes)->
     receive
         {geraJogador, From} ->
@@ -187,12 +189,10 @@ gameManager(Estado, MelhoresPontuacoes)->
         
         {pontos, From} ->
             Data = "Pontos" ++ " " ++ integer_to_list(length(maps:to_list(MelhoresPontuacoes))) ++ " " ++ formatarPontuacoes(maps:to_list(MelhoresPontuacoes)),
-            %io:format("ENVIEI ESTES DADOS~p~n",[Data]),
             From ! {line,Data},
-            %io:format("Pontuaçoes ~p~n",[formatarPontuacoes(maps:to_list(MelhoresPontuacoes))]), 
             gameManager(Estado,MelhoresPontuacoes);
 
-
+        %Recebe o x e y do rato e atualiza o vetor direçao do jogador
         {Coordenadas, Data, From} ->
             
 
@@ -206,33 +206,20 @@ gameManager(Estado, MelhoresPontuacoes)->
                     NovoEstado = updateTeclas(Estado,Coordenadas2,From) 
             
             end,
-            %io:format("Y ~p~n", [Y]),
-            %io:format("Estado Antigo~p~n",[Estado]), 
-            %io:format("Novo Estado~p~n",[NovoEstado]), 
             gameManager(NovoEstado,MelhoresPontuacoes);
 
             
         {refresh, _} ->
-            %io:format("Vou fazer refresh~n"),
 
             NovoEstado = update(Estado),
             {ListaJogadores, _, _, _, _} = Estado,
             Pids = [Pid || {_, {User, Pid}} <- ListaJogadores ],
-            %EstadoM = formatState(NovoEstado),
-            %io:format("Estado String~p~n",[EstadoM]),
             [ H ! {line,formatState(NovoEstado)} || H <- Pids],
-            %JogadoresPontos = [{User,P} || {{_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,P}, {User, _}} <- ListaJogadores ],
-            %io:format("JogadoresPontos~p~n",[JogadoresPontos]),
-            %io:format("Pontos melhores~p~n",[atualizaMelhoresPontos(MelhoresPontuacoes,JogadoresPontos)]), 
             gameManager(NovoEstado,MelhoresPontuacoes);
 
         {atualizaPontos, From} ->
             io:format("Vou atualizar pontos~n"),
-
-
             MelhoresPontuacoesAux = atualizaMelhoresPontos(MelhoresPontuacoes, [{From,1}]),
-
-
             gameManager(Estado,MelhoresPontuacoesAux);
 
         {leave, From} ->
@@ -272,6 +259,133 @@ gameManager(Estado, MelhoresPontuacoes)->
                             gameManager(removeJogador(Estado,H2),MelhoresPontuacoes);
                         Pid3 == From ->
                             gameManager(removeJogador(Estado,H3),MelhoresPontuacoes);
+                        true ->
+                            gameManager(Estado,MelhoresPontuacoes)
+                    end;
+                length(ListaJogadores) == 4 ->
+                    [H1, H2, H3, H4 |T] = ListaJogadores,
+                    {_, {_, Pid1}} = H1,
+                    {_, {_, Pid2}} = H2,
+                    {_, {_, Pid3}} = H3,
+                    {_, {_, Pid4}} = H4,
+
+                    if
+                        Pid1 == From ->
+                            gameManager(removeJogador(Estado,H1),MelhoresPontuacoes);
+                        Pid2 == From ->
+                            gameManager(removeJogador(Estado,H2),MelhoresPontuacoes);
+                        Pid3 == From ->
+                            gameManager(removeJogador(Estado,H3),MelhoresPontuacoes);
+                        Pid4 == From ->
+                            gameManager(removeJogador(Estado,H4),MelhoresPontuacoes);
+                        true ->
+                            gameManager(Estado,MelhoresPontuacoes)
+                    end;
+                length(ListaJogadores) == 5 ->
+                    [H1, H2, H3, H4, H5 |T] = ListaJogadores,
+                    {_, {_, Pid1}} = H1,
+                    {_, {_, Pid2}} = H2,
+                    {_, {_, Pid3}} = H3,
+                    {_, {_, Pid4}} = H4,
+                    {_, {_, Pid5}} = H5,
+                    if
+                        Pid1 == From ->
+                            gameManager(removeJogador(Estado,H1),MelhoresPontuacoes);
+                        Pid2 == From ->
+                            gameManager(removeJogador(Estado,H2),MelhoresPontuacoes);
+                        Pid3 == From ->
+                            gameManager(removeJogador(Estado,H3),MelhoresPontuacoes);
+                        Pid4 == From ->
+                            gameManager(removeJogador(Estado,H4),MelhoresPontuacoes);
+                        Pid5 == From ->
+                            gameManager(removeJogador(Estado,H5),MelhoresPontuacoes);
+                        true ->
+                            gameManager(Estado,MelhoresPontuacoes)
+                    end;
+                length(ListaJogadores) == 6 ->
+                    [H1, H2, H3, H4, H5, H6 |T] = ListaJogadores,
+                    {_, {_, Pid1}} = H1,
+                    {_, {_, Pid2}} = H2,
+                    {_, {_, Pid3}} = H3,
+                    {_, {_, Pid4}} = H4,
+                    {_, {_, Pid5}} = H5,
+                    {_, {_, Pid6}} = H6,
+
+                    if
+                        Pid1 == From ->
+                            gameManager(removeJogador(Estado,H1),MelhoresPontuacoes);
+                        Pid2 == From ->
+                            gameManager(removeJogador(Estado,H2),MelhoresPontuacoes);
+                        Pid3 == From ->
+                            gameManager(removeJogador(Estado,H3),MelhoresPontuacoes);
+                        Pid4 == From ->
+                            gameManager(removeJogador(Estado,H4),MelhoresPontuacoes);
+                        Pid5 == From ->
+                            gameManager(removeJogador(Estado,H5),MelhoresPontuacoes);
+                        Pid6 == From ->
+                            gameManager(removeJogador(Estado,H6),MelhoresPontuacoes);
+                        
+                        true ->
+                            gameManager(Estado,MelhoresPontuacoes)
+                    end;
+                length(ListaJogadores) == 7 ->
+                    [H1, H2, H3, H4, H5, H6, H7 |T] = ListaJogadores,
+                    {_, {_, Pid1}} = H1,
+                    {_, {_, Pid2}} = H2,
+                    {_, {_, Pid3}} = H3,
+                    {_, {_, Pid4}} = H4,
+                    {_, {_, Pid5}} = H5,
+                    {_, {_, Pid6}} = H6,
+                    {_, {_, Pid7}} = H7,
+
+                    if
+                        Pid1 == From ->
+                            gameManager(removeJogador(Estado,H1),MelhoresPontuacoes);
+                        Pid2 == From ->
+                            gameManager(removeJogador(Estado,H2),MelhoresPontuacoes);
+                        Pid3 == From ->
+                            gameManager(removeJogador(Estado,H3),MelhoresPontuacoes);
+                        Pid4 == From ->
+                            gameManager(removeJogador(Estado,H4),MelhoresPontuacoes);
+                        Pid5 == From ->
+                            gameManager(removeJogador(Estado,H5),MelhoresPontuacoes);
+                        Pid6 == From ->
+                            gameManager(removeJogador(Estado,H6),MelhoresPontuacoes);
+                        Pid7 == From ->
+                            gameManager(removeJogador(Estado,H7),MelhoresPontuacoes);
+                        
+                        true ->
+                            gameManager(Estado,MelhoresPontuacoes)
+                    end;
+                length(ListaJogadores) == 8 ->
+                    [H1, H2, H3, H4, H5, H6, H7, H8 |T] = ListaJogadores,
+                    {_, {_, Pid1}} = H1,
+                    {_, {_, Pid2}} = H2,
+                    {_, {_, Pid3}} = H3,
+                    {_, {_, Pid4}} = H4,
+                    {_, {_, Pid5}} = H5,
+                    {_, {_, Pid6}} = H6,
+                    {_, {_, Pid7}} = H7,
+                    {_, {_, Pid8}} = H8,
+
+                    if
+                        Pid1 == From ->
+                            gameManager(removeJogador(Estado,H1),MelhoresPontuacoes);
+                        Pid2 == From ->
+                            gameManager(removeJogador(Estado,H2),MelhoresPontuacoes);
+                        Pid3 == From ->
+                            gameManager(removeJogador(Estado,H3),MelhoresPontuacoes);
+                        Pid4 == From ->
+                            gameManager(removeJogador(Estado,H4),MelhoresPontuacoes);
+                        Pid5 == From ->
+                            gameManager(removeJogador(Estado,H5),MelhoresPontuacoes);
+                        Pid6 == From ->
+                            gameManager(removeJogador(Estado,H6),MelhoresPontuacoes);
+                        Pid7 == From ->
+                            gameManager(removeJogador(Estado,H7),MelhoresPontuacoes);
+                        Pid8 == From ->
+                            gameManager(removeJogador(Estado,H8),MelhoresPontuacoes);
+                        
                         true ->
                             gameManager(Estado,MelhoresPontuacoes)
                     end;
@@ -323,6 +437,7 @@ gameManager(Estado, MelhoresPontuacoes)->
 
     end.
 
+%Verifica as colisoes e verifica tambem se alguem ganhou ou perdeu 
 update(Estado) ->
     {ListaJogadores, ListaVerdes, ListaReds, ListaBlues, TamanhoEcra} = Estado,
     %COLISOES

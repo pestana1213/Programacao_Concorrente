@@ -3,7 +3,8 @@
 -import(auxiliar, [multiplicaVector/2, normalizaVector/1, adicionaPares/2, distancia/2,posiciona/1]).
 -import (math, [sqrt/1, pow/2, acos/1, cos/1, sin/1, pi/0]).
 
-%Player = {true,Posicao, Direcao, Velocidade, Cor,Raio, AceleracaoLinear, AceleracaoAngular,    Arrasto, RaioMax,RaioMin, Agilidade}
+%Classe Jogador
+
 novoJogador(ListaAzul) ->
 
     %constantes
@@ -36,10 +37,6 @@ verificaColisaoAzuis(Jogador, ListaAzul) ->
     {true,Posicao, Direcao, Velocidade, CorAtual,Raio, AceleracaoLinear, AceleracaoAngular,    Arrasto, RaioMax,RaioMin, Agilidade,Pontuacao}=Jogador,
     {PosX,PosY} = Posicao,
     T5 = verificaColisaoLimiteMapa(Jogador),
-    %io:fwrite("RAIO MINIMO: ~p ~n", [RaioMin]),
-    %io:fwrite("RAIO: ~p ~n", [Raio]),
-    %io:fwrite("CONDICOES: ~p ~n", [T1 or T2 or T3 or T5]),
-    
 
     if
         T5 ->
@@ -47,6 +44,7 @@ verificaColisaoAzuis(Jogador, ListaAzul) ->
             DirecaoA = Direcao,
             Radians = (DirecaoA * pi()) / 180,
             if 
+                %Para transferir o Jogador para a posicao certa 
                 PosX >= 1000 -> 
                     NPosicao=adicionaPares(Posicao,{-1299 + Raio ,0});
                 PosX =< 300 -> 
@@ -261,7 +259,6 @@ movimentaJogador(Jogador) ->
 
 atualizaJogadores (ListaJogadores,ListaColisaoVerde ,ListaColisaoVermelho, ListaColisaoAzul) -> 
     
-
     %io:fwrite("Lista Nao Filtrada: ~p ~n", [ListaJogadores]),
     ListaJogadoresMexidos = [{movimentaJogador(Jogador),{U,P}} || {Jogador,{U,P}} <- ListaJogadores],
     
@@ -311,8 +308,7 @@ acelerarFrente(Jogador) ->
     {E,Posicao, Direcao, Velocidade, Cor,Raio, AceleracaoLinear, AceleracaoAngular,    Arrasto, RaioMax,RaioMin, Agilidade,Pontuacao} = Jogador,
     VelocidadeMaxRaio = calculaVelocidadeMax(Raio),
     if 
-        E ->
-                       
+        E ->             
             NvelocidadeA = Velocidade + Agilidade/2 * AceleracaoLinear,
             if 
                 NvelocidadeA > VelocidadeMaxRaio ->
