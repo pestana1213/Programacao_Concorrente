@@ -187,7 +187,7 @@ public void menu() {
 
   nova_partida = new GButton(this, 475, 400, 300, 120);
   nova_partida.setText("Nova Partida");
-  nova_partida.setLocalColorScheme(3);
+  nova_partida.setLocalColorScheme(1);
   nova_partida.addEventHandler(this, "nova_partida_click");
 
   jogo_pontos_button = new GButton(this, 850, 60, 60, 60);
